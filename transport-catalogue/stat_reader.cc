@@ -1,26 +1,26 @@
-#include "stat_reader.h"
-
 #include <iomanip>
 #include <iostream>
 
+#include "domain.h"
+#include "stat_reader.h"
 #include "transport_catalogue.h"
 
 namespace io {
 
-void StatReader::PrintRouteInfo(const catalogue::RouteInfo& r) {
+void StatReader::PrintRouteInfo(const domain::RouteInfo& r) {
   using namespace std;
   output_ << setprecision(6) << "Bus "s << r.name << ": "s;
-  if (r.stops == 0) {
+  if (r.count == 0) {
     output_ << "not found"s;
   } else {
-    output_ << r.stops << " stops on route, "s << r.unique << " unique stops, "s
+    output_ << r.count << " stops on route, "s << r.unique << " unique stops, "s
             << static_cast<double>(r.length) << " route length, "s
             << r.curvature << " curvature"s;
   }
   output_ << endl;
 }
 
-void StatReader::PrintStopInfo(const catalogue::StopInfo& s) {
+void StatReader::PrintStopInfo(const domain::StopInfo& s) {
   using namespace std;
   output_ << "Stop "s << s.name << ": "s;
   if (!s.is_found) {

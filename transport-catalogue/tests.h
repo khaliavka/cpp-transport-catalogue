@@ -1,8 +1,9 @@
 #pragma once
 
-namespace tests {
+namespace test {
 
 void TestTC();
 void TestIR();
+void TestJR();
 
 }

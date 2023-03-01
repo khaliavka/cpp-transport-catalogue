@@ -31,5 +31,6 @@
 *.out
 *.app
 
-#Txt
+#Other
+*.json
 *.txt

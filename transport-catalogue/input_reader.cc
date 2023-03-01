@@ -82,9 +82,8 @@ InputReader::Query InputReader::ParseQuery(std::string_view raw_query) {
   return query;
 }
 
-StopsData InputReader::ParseAddStop(std::string_view str) {
+domain::StopData InputReader::ParseAddStop(std::string_view str) {
   using namespace std;
-  using namespace catalogue;
   auto [name, data] = Split(str, ":"sv);
   name = Crop(name, " "sv);
   vector<pair<string_view, size_t>> distances;
@@ -94,11 +93,11 @@ StopsData InputReader::ParseAddStop(std::string_view str) {
     stop = Crop(stop, " "sv);
     distances.emplace_back(pair{stop, stoull(string{dist})});
   }
-  return {name, Coordinates{stod(string{slices[0]}), stod(string{slices[1]})},
+  return {name, geo::Coordinates{stod(string{slices[0]}), stod(string{slices[1]})},
           move(distances)};
 }
 
-RouteData InputReader::ParseAddRoute(std::string_view str) {
+domain::RouteData InputReader::ParseAddRoute(std::string_view str) {
   using namespace std::literals;
   auto [name, stops] = Split(str, ":"sv);
   name = Crop(name, " "sv);
@@ -125,14 +124,14 @@ std::string_view InputReader::ParseGetStopInfo(std::string_view str) {
 void InputReader::ProcessQueries(catalogue::TransportCatalogue& c) {
   for (; !buffer_.empty();) {
     auto query = ParseQuery(buffer_.front());
-    StopsData stop;
-    RouteData route;
+    domain::StopData stop;
+    domain::RouteData route;
     switch (query.type) {
       case QueryType::ADD_STOP:
         stop = ParseAddStop(query.data);
-        c.AddStop(stop.name, stop.coordinates, true);
+        c.AddStop(stop.name, stop.coordinates);
         for (const auto& [name, dist] : stop.distances) {
-          c.AddStop(name, {}, false);
+          c.AddDraftStop(name, {});
           c.SetDistance(stop.name, name, dist);
         }
         break;
@@ -140,7 +139,6 @@ void InputReader::ProcessQueries(catalogue::TransportCatalogue& c) {
         route = ParseAddRoute(query.data);
         c.AddRoute(route.name, route.stops);
         break;
-
       case QueryType::GET_ROUTE_INFO:
         stat_reader_.PrintRouteInfo(
             c.GetRouteInfo(ParseGetRouteInfo(query.data)));

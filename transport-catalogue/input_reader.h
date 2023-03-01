@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "domain.h"
 #include "geo.h"
 #include "stat_reader.h"
 #include "transport_catalogue.h"
@@ -14,17 +15,6 @@
 namespace io {
 
 enum class QueryType { ADD_STOP, ADD_ROUTE, GET_ROUTE_INFO, GET_STOP_INFO };
-
-struct StopsData {
-  std::string_view name;
-  catalogue::Coordinates coordinates;
-  std::vector<std::pair<std::string_view, size_t>> distances;
-};
-
-struct RouteData {
-  std::string_view name;
-  std::vector<std::string_view> stops;
-};
 
 class InputReader {
  public:
@@ -49,8 +39,8 @@ class InputReader {
   std::string_view Crop(std::string_view str, std::string_view symbols);
   std::vector<std::string_view> Chop(std::string_view str, std::string_view by);
   Query ParseQuery(std::string_view raw_query);
-  StopsData ParseAddStop(std::string_view str);
-  RouteData ParseAddRoute(std::string_view str);
+  domain::StopData ParseAddStop(std::string_view str);
+  domain::RouteData ParseAddRoute(std::string_view str);
   std::string_view ParseGetRouteInfo(std::string_view str);
   std::string_view ParseGetStopInfo(std::string_view str);
 };
