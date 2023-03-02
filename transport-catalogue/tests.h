@@ -5,5 +5,6 @@ namespace test {
 void TestTC();
 void TestIR();
 void TestJR();
+void TestMR();
 
 }

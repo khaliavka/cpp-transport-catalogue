@@ -16,22 +16,23 @@ using namespace catalogue;
 using namespace domain;
 using namespace json;
 
-void RequestHandler::PushError(int id) {
+json::Dict RequestHandler::ErrorMessage(int id) const {
   json::Dict err_map;
   err_map["request_id"s] = id;
   err_map["error_message"s] = std::move("not found"s);
-  out_.push_back(std::move(err_map));
+  return err_map;
 }
 
 void RequestHandler::ProcessStatRequests(const TransportCatalogue& c,
                                          const json::Array& stat_reqs) {
   for (const auto& req : stat_reqs) {
     const auto& r_map = req.AsMap();
+    int id = r_map.at("id"s).AsInt();
     if (r_map.at("type"s).AsString() == "Stop"s) {
       const auto stop = c.GetStopInfo(r_map.at("name"s).AsString());
       if (stop.is_found) {
         json::Dict ans_map;
-        ans_map["request_id"s] = r_map.at("id"s).AsInt();
+        ans_map["request_id"s] = id;
         json::Array ans_arr;
         for (const auto& route : stop.routes) {
           ans_arr.emplace_back(Node{std::string{route}});
@@ -39,7 +40,7 @@ void RequestHandler::ProcessStatRequests(const TransportCatalogue& c,
         ans_map["buses"s] = std::move(ans_arr);
         out_.push_back(std::move(ans_map));
       } else {
-        PushError(r_map.at("id"s).AsInt());
+        out_.push_back(std::move(ErrorMessage(id)));
       }
     }
     if (r_map.at("type"s).AsString() == "Bus"s) {
@@ -53,7 +54,7 @@ void RequestHandler::ProcessStatRequests(const TransportCatalogue& c,
         ans_map["unique_stop_count"s] = static_cast<int>(route.unique);
         out_.push_back(std::move(ans_map));
       } else {
-        PushError(r_map.at("id"s).AsInt());
+        out_.push_back(std::move(ErrorMessage(id)));
       }
     }
   }

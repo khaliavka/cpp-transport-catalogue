@@ -34,3 +34,5 @@
 #Other
 *.json
 *.txt
+*.svg
+*.xml

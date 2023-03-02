@@ -12,7 +12,7 @@ class RequestHandler {
   void ProcessStatRequests(const catalogue::TransportCatalogue& c, const json::Array& stat_reqs);
   void PrintRequests(std::ostream& out);
  private:
-  void PushError(int id);
+  json::Dict ErrorMessage(int id) const;
   json::Array out_;
 };
 

@@ -64,8 +64,12 @@ RouteData JSONreader::ProcessRoute(const json::Dict& route_map,
   return route;
 }
 
-const json::Array& JSONreader::GetStatRequests() {
+const json::Array& JSONreader::GetStatRequests() const {
   return document_.GetRoot().AsMap().at("stat_requests"s).AsArray();
+}
+
+const json::Dict& JSONreader::GetRenderSettings() const {
+  return document_.GetRoot().AsMap().at("render_settings"s).AsMap();
 }
 
 }  // namespace jreader

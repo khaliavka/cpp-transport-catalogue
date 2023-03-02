@@ -1,6 +1,7 @@
 #include "json.h"
 
 #include <cassert>
+#include <exception>
 #include <iostream>
 #include <sstream>
 #include <string>

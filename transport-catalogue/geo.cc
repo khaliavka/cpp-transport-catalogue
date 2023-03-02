@@ -17,4 +17,6 @@ double ComputeDistance(Coordinates from, Coordinates to) {
          PLANET_RADIUS;
 }
 
+bool IsZero(double value) { return std::abs(value) < EPSILON; }
+
 }

@@ -1,3 +1,5 @@
+#include "tests.h"
+
 #include <cassert>
 #include <iostream>
 #include <sstream>
@@ -7,8 +9,9 @@
 #include "input_reader.h"
 #include "json.h"
 #include "json_reader.h"
-#include "transport_catalogue.h"
+#include "map_renderer.h"
 #include "request_handler.h"
+#include "transport_catalogue.h"
 
 namespace test {
 
@@ -66,4 +69,19 @@ void TestJR() {
   return;
 }
 
+void TestMR() {
+  using namespace std;
+  using namespace jreader;
+  using namespace mrenderer;
+  using namespace catalogue;
+
+  JSONreader jr(json::Load(cin));
+  TransportCatalogue c;
+  jr.ProcessBaseRequests(c);
+  
+  MapRenderer mr;
+  // mr.SetRenderSettings(jr.GetRenderSettings());
+  mr.RenderMap(c, cout);
+  return;
+}
 }  // namespace test
