@@ -3,14 +3,18 @@
 #include "domain.h"
 #include "json.h"
 #include "json_reader.h"
+#include "map_renderer.h"
 #include "transport_catalogue.h"
 
-namespace reqhandler {
+namespace rhandler {
 
 class RequestHandler {
  public:
-  void ProcessStatRequests(const catalogue::TransportCatalogue& c, const json::Array& stat_reqs);
+  void ProcessStatRequests(const catalogue::TransportCatalogue& c,
+                           mrenderer::MapRenderer& mr,
+                           const json::Array& stat_reqs);
   void PrintRequests(std::ostream& out);
+
  private:
   json::Dict ErrorMessage(int id) const;
   json::Array out_;
@@ -56,4 +60,4 @@ renderer_;
 };
 */
 
-}
+}  // namespace rhandler

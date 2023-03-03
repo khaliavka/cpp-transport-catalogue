@@ -1,14 +1,16 @@
 #include "request_handler.h"
 
+#include <sstream>
 #include <string>
 #include <utility>
 
 #include "domain.h"
 #include "json.h"
 #include "json_reader.h"
+#include "map_renderer.h"
 #include "transport_catalogue.h"
 
-namespace reqhandler {
+namespace rhandler {
 
 using namespace std::literals;
 using namespace jreader;
@@ -24,6 +26,7 @@ json::Dict RequestHandler::ErrorMessage(int id) const {
 }
 
 void RequestHandler::ProcessStatRequests(const TransportCatalogue& c,
+                                         mrenderer::MapRenderer& mr,
                                          const json::Array& stat_reqs) {
   for (const auto& req : stat_reqs) {
     const auto& r_map = req.AsMap();
@@ -47,15 +50,23 @@ void RequestHandler::ProcessStatRequests(const TransportCatalogue& c,
       const auto route = c.GetRouteInfo(r_map.at("name"s).AsString());
       if (route.is_found) {
         json::Dict ans_map;
-        ans_map["curvature"s] = route.curvature;
         ans_map["request_id"s] = r_map.at("id"s).AsInt();
-        ans_map["route_length"s] = static_cast<int>(route.length);
         ans_map["stop_count"s] = static_cast<int>(route.count);
         ans_map["unique_stop_count"s] = static_cast<int>(route.unique);
+        ans_map["route_length"s] = static_cast<int>(route.length);
+        ans_map["curvature"s] = route.curvature;
         out_.push_back(std::move(ans_map));
       } else {
         out_.push_back(std::move(ErrorMessage(id)));
       }
+    }
+    if (r_map.at("type"s).AsString() == "Map"s) {
+      json::Dict ans_map;
+      ans_map["request_id"s] = r_map.at("id"s).AsInt();
+      std::ostringstream os;
+      mr.RenderMap(c, os);
+      ans_map["map"s] = std::move(os.str());
+      out_.push_back(std::move(ans_map));
     }
   }
 }
@@ -63,13 +74,4 @@ void RequestHandler::PrintRequests(std::ostream& out) {
   Print(Document{out_}, out);
 }
 
-/*
- * Здесь можно было бы разместить код обработчика запросов к базе, содержащего
- * логику, которую не хотелось бы помещать ни в transport_catalogue, ни в json
- * reader.
- *
- * Если вы затрудняетесь выбрать, что можно было бы поместить в этот файл,
- * можете оставить его пустым.
- */
-
-}  // namespace reqhandler
+}  // namespace rhandler

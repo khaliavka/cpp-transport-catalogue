@@ -66,8 +66,7 @@ size_t TransportCatalogue::GetDistance(std::string_view start,
   return distances_.at(hasher_(end) + 2083 * hasher_(start));
 }
 
-RouteInfo TransportCatalogue::GetRouteInfo(
-    std::string_view name) const {
+RouteInfo TransportCatalogue::GetRouteInfo(std::string_view name) const {
   if (routename_to_route_.count(name) == 0) {
     return {name, {}, {}, {}, {}, false};
   }
@@ -122,9 +121,8 @@ geo::Coordinates TransportCatalogue::GetCoordinates(
   return stopname_to_stop_.at(name)->coordinates;
 }
 
-  bool TransportCatalogue::IsRoundTrip(std::string_view name) const {
-    return routename_to_route_.at(name)->is_roundtrip;
-  }
-
+bool TransportCatalogue::IsRoundTrip(std::string_view name) const {
+  return routename_to_route_.at(name)->is_roundtrip;
+}
 
 }  // namespace catalogue

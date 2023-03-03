@@ -4,12 +4,12 @@
 #include <string>
 
 #include "geo.h"
-// #include "input_reader.h"
 #include "json.h"
 #include "json_reader.h"
 #include "map_renderer.h"
 #include "request_handler.h"
 #include "transport_catalogue.h"
+// #include "input_reader.h"
 
 namespace test {
 
@@ -84,8 +84,19 @@ void TestMR() {
 }  // namespace test
 
 int main() {
-  using namespace test;
-  // TestTC();
-  TestMR();
+  using namespace std;
+  using namespace jreader;
+  using namespace mrenderer;
+  using namespace rhandler;
+  using namespace catalogue;
+
+  JSONreader jr(json::Load(cin));
+  TransportCatalogue c;
+  jr.ProcessBaseRequests(c);
+  MapRenderer mr;
+  mr.SetRenderSettings(jr.GetRenderSettings());
+  RequestHandler rh;
+  rh.ProcessStatRequests(c, mr, jr.GetStatRequests());
+  rh.PrintRequests(cout);
   return 0;
 }

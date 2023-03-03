@@ -34,7 +34,8 @@ class TransportCatalogue {
   void AddStop(const std::string_view name, geo::Coordinates coordinates);
   void AddDraftStop(const std::string_view name, geo::Coordinates coordinates);
   void AddRoute(const std::string_view route_name,
-                const std::vector<std::string_view>& stop_names, bool is_roundtrip);
+                const std::vector<std::string_view>& stop_names,
+                bool is_roundtrip);
   void SetDistance(std::string_view start, std::string_view end, size_t d);
   size_t GetDistance(std::string_view start, std::string_view end) const;
   RouteInfo GetRouteInfo(std::string_view name) const;
@@ -43,7 +44,6 @@ class TransportCatalogue {
   std::vector<std::string_view> GetStopsForRoute(std::string_view name) const;
   geo::Coordinates GetCoordinates(std::string_view name) const;
   bool IsRoundTrip(std::string_view name) const;
-
 
  private:
   struct Stop {

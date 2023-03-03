@@ -56,13 +56,6 @@ class MapRenderer {
   template <typename T>
   void MakeStopLabels(const T& unique, const geo::SphereProjector& projector);
 
-  // RenderSettings settings_{600,     400,
-  //                          50,      14,
-  //                          5,      20,
-  //                          {7, 15}, 20,
-  //                          {7, -3}, {255, 255, 255, 0.85},
-  //                          3,       {"green"s, svg::Rgb{255, 160, 0},
-  //                          "red"s}};
   svg::Document document_;
   RenderSettings settings_;
 };
