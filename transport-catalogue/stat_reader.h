@@ -10,8 +10,8 @@ namespace io {
 class StatReader {
  public:
   StatReader(std::ostream& out) : output_(out) {}
-  void PrintRouteInfo(const domain::RouteInfo& r);
-  void PrintStopInfo(const domain::StopInfo& s);
+  void PrintRouteInfo(const catalogue::RouteInfo& r);
+  void PrintStopInfo(const catalogue::StopInfo& s);
 
  private:
   std::ostream& output_;

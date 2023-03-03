@@ -16,8 +16,7 @@ class JSONreader {
 
  private:
   domain::StopData ProcessStop(const json::Dict& stop_map);
-  domain::RouteData ProcessRoute(const json::Dict& route_map,
-                                 bool is_roundtrip);
+  domain::RouteData ProcessRoute(const json::Dict& r_map);
   json::Document document_;
   std::vector<domain::StopData> stops_;
   std::vector<domain::RouteData> routes_;

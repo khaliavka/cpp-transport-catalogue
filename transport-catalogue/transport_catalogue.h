@@ -14,19 +14,35 @@
 
 namespace catalogue {
 
+struct StopInfo {
+  std::string_view name;
+  const std::set<std::string_view>& routes;
+  bool is_found = false;
+};
+
+struct RouteInfo {
+  std::string_view name;
+  size_t count;
+  size_t unique;
+  size_t length;
+  double curvature;
+  bool is_found = false;
+};
+
 class TransportCatalogue {
  public:
   void AddStop(const std::string_view name, geo::Coordinates coordinates);
   void AddDraftStop(const std::string_view name, geo::Coordinates coordinates);
   void AddRoute(const std::string_view route_name,
-                const std::vector<std::string_view>& stop_names);
+                const std::vector<std::string_view>& stop_names, bool is_roundtrip);
   void SetDistance(std::string_view start, std::string_view end, size_t d);
   size_t GetDistance(std::string_view start, std::string_view end) const;
-  domain::RouteInfo GetRouteInfo(std::string_view name) const;
-  domain::StopInfo GetStopInfo(std::string_view name) const;
-  std::vector<std::string_view> GetRoutes() const;
+  RouteInfo GetRouteInfo(std::string_view name) const;
+  StopInfo GetStopInfo(std::string_view name) const;
+  std::vector<std::string_view> GetRouteNames() const;
   std::vector<std::string_view> GetStopsForRoute(std::string_view name) const;
   geo::Coordinates GetCoordinates(std::string_view name) const;
+  bool IsRoundTrip(std::string_view name) const;
 
 
  private:
@@ -41,6 +57,7 @@ class TransportCatalogue {
     std::string name;
     std::vector<Stop*> stops;
     std::unordered_set<Stop*> unique;
+    bool is_roundtrip;
   };
 
   void AddStopInternal(const std::string_view name,

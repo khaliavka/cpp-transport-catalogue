@@ -99,16 +99,21 @@ domain::StopData InputReader::ParseAddStop(std::string_view str) {
 
 domain::RouteData InputReader::ParseAddRoute(std::string_view str) {
   using namespace std::literals;
+  domain::RouteData result;
   auto [name, stops] = Split(str, ":"sv);
   name = Crop(name, " "sv);
-  auto stops_v = Chop(stops, ">"sv);
-  if (stops_v.size() == 1ull) {
-    stops_v = Chop(stops, "-"sv);
-    for (size_t i = stops_v.size() - 1; i != 0; --i) {
-      stops_v.push_back(stops_v[i - 1]);
+  result.name = name;
+  result.is_roundtrip = true;
+  auto& rs = result.stops;
+  rs = Chop(stops, ">"sv);
+  if (rs.size() == 1ull) {
+    rs = Chop(stops, "-"sv);
+    for (size_t i = rs.size() - 1; i != 0; --i) {
+      rs.push_back(rs[i - 1]);
     }
+    result.is_roundtrip = false;
   }
-  return {name, stops_v};
+  return result;
 }
 
 std::string_view InputReader::ParseGetRouteInfo(std::string_view str) {
@@ -137,7 +142,7 @@ void InputReader::ProcessQueries(catalogue::TransportCatalogue& c) {
         break;
       case QueryType::ADD_ROUTE:
         route = ParseAddRoute(query.data);
-        c.AddRoute(route.name, route.stops);
+        c.AddRoute(route.name, route.stops, route.is_roundtrip);
         break;
       case QueryType::GET_ROUTE_INFO:
         stat_reader_.PrintRouteInfo(

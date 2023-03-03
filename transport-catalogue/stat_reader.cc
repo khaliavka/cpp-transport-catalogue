@@ -7,7 +7,7 @@
 
 namespace io {
 
-void StatReader::PrintRouteInfo(const domain::RouteInfo& r) {
+void StatReader::PrintRouteInfo(const catalogue::RouteInfo& r) {
   using namespace std;
   output_ << setprecision(6) << "Bus "s << r.name << ": "s;
   if (r.count == 0) {
@@ -20,7 +20,7 @@ void StatReader::PrintRouteInfo(const domain::RouteInfo& r) {
   output_ << endl;
 }
 
-void StatReader::PrintStopInfo(const domain::StopInfo& s) {
+void StatReader::PrintStopInfo(const catalogue::StopInfo& s) {
   using namespace std;
   output_ << "Stop "s << s.name << ": "s;
   if (!s.is_found) {

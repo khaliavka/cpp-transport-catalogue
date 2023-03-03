@@ -8,6 +8,17 @@
 
 namespace domain {
 
+struct Stop {
+  std::string_view name;
+  geo::Coordinates coordinates;
+};
+
+struct Route {
+  std::string_view name;
+  std::vector<Stop> stops;
+  bool is_roundtrip = false;
+};
+
 struct StopData {
   std::string_view name;
   geo::Coordinates coordinates;
@@ -17,21 +28,7 @@ struct StopData {
 struct RouteData {
   std::string_view name;
   std::vector<std::string_view> stops;
-};
-
-struct StopInfo {
-  std::string_view name;
-  const std::set<std::string_view>& routes;
-  bool is_found = false;
-};
-
-struct RouteInfo {
-  std::string_view name;
-  size_t count;
-  size_t unique;
-  size_t length;
-  double curvature;
-  bool is_found = false;
+  bool is_roundtrip = false;
 };
 
 }  // namespace domain

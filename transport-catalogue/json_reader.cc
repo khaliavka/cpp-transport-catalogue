@@ -30,8 +30,8 @@ void JSONreader::ProcessBaseRequests(TransportCatalogue& c) {
       }
     }
     if (r_map.at("type"s).AsString() == "Bus"s) {
-      RouteData route = ProcessRoute(r_map, r_map.at("is_roundtrip"s).AsBool());
-      c.AddRoute(route.name, route.stops);
+      RouteData route = ProcessRoute(r_map);
+      c.AddRoute(route.name, route.stops, route.is_roundtrip);
     }
   }
   return;
@@ -49,18 +49,19 @@ StopData JSONreader::ProcessStop(const json::Dict& stop_map) {
   return stop;
 }
 
-RouteData JSONreader::ProcessRoute(const json::Dict& route_map,
-                                   bool is_roundtrip) {
+RouteData JSONreader::ProcessRoute(const json::Dict& r_map) {
   RouteData route;
-  route.name = route_map.at("name"s).AsString();
-  for (const auto& stop : route_map.at("stops"s).AsArray()) {
+  route.name = r_map.at("name"s).AsString();
+  for (const auto& stop : r_map.at("stops"s).AsArray()) {
     route.stops.emplace_back(std::string_view{stop.AsString()});
   }
+  bool is_roundtrip = r_map.at("is_roundtrip"s).AsBool();
   if (!is_roundtrip) {
     for (size_t i = route.stops.size() - 1; i != 0; --i) {
       route.stops.push_back(route.stops[i - 1]);
     }
   }
+  route.is_roundtrip = is_roundtrip;
   return route;
 }
 
