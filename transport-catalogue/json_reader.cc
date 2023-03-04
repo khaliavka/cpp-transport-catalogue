@@ -37,7 +37,7 @@ void JSONreader::ProcessBaseRequests(TransportCatalogue& c) {
   return;
 }
 
-StopData JSONreader::ProcessStop(const json::Dict& stop_map) {
+StopData JSONreader::ProcessStop(const json::Dict& stop_map) const {
   StopData stop;
   stop.name = stop_map.at("name"s).AsString();
   stop.coordinates.lat = stop_map.at("latitude"s).AsDouble();
@@ -49,7 +49,7 @@ StopData JSONreader::ProcessStop(const json::Dict& stop_map) {
   return stop;
 }
 
-RouteData JSONreader::ProcessRoute(const json::Dict& r_map) {
+RouteData JSONreader::ProcessRoute(const json::Dict& r_map) const {
   RouteData route;
   route.name = r_map.at("name"s).AsString();
   for (const auto& stop : r_map.at("stops"s).AsArray()) {

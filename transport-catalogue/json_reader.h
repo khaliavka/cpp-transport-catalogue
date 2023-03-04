@@ -15,11 +15,10 @@ class JSONreader {
   const json::Dict& GetRenderSettings() const;
 
  private:
-  domain::StopData ProcessStop(const json::Dict& stop_map);
-  domain::RouteData ProcessRoute(const json::Dict& r_map);
+  domain::StopData ProcessStop(const json::Dict& stop_map) const;
+  domain::RouteData ProcessRoute(const json::Dict& r_map) const;
+  
   json::Document document_;
-  std::vector<domain::StopData> stops_;
-  std::vector<domain::RouteData> routes_;
 };
 
 }  // namespace jreader

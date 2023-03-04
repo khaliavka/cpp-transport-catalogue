@@ -70,7 +70,7 @@ void RequestHandler::ProcessStatRequests(const TransportCatalogue& c,
     }
   }
 }
-void RequestHandler::PrintRequests(std::ostream& out) {
+void RequestHandler::PrintRequests(std::ostream& out) const {
   Print(Document{out_}, out);
 }
 
