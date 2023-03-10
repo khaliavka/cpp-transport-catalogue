@@ -22,9 +22,9 @@ struct StopInfo {
 
 struct RouteInfo {
   std::string_view name;
-  size_t count;
-  size_t unique;
-  size_t length;
+  int count;
+  int unique;
+  int length;
   double curvature;
   bool is_found = false;
 };

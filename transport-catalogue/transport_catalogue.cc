@@ -80,8 +80,12 @@ RouteInfo TransportCatalogue::GetRouteInfo(std::string_view name) const {
     r_distance += GetDistance(route->stops[i - 1]->name, route->stops[i]->name);
   }
 
-  return {route->name, route->stops.size(),     route->unique.size(),
-          r_distance,  r_distance / g_distance, true};
+  return {route->name,
+          static_cast<int>(route->stops.size()),
+          static_cast<int>(route->unique.size()),
+          static_cast<int>(r_distance),
+          r_distance / g_distance,
+          true};
 }
 
 StopInfo TransportCatalogue::GetStopInfo(std::string_view name) const {

@@ -18,9 +18,9 @@ JSONreader::JSONreader(json::Document d) : document_(std::move(d)) {}
 
 void JSONreader::ProcessBaseRequests(TransportCatalogue& c) {
   const auto& base_reqs =
-      document_.GetRoot().AsMap().at("base_requests"s).AsArray();
+      document_.GetRoot().AsDict().at("base_requests"s).AsArray();
   for (const auto& req : base_reqs) {
-    const auto& r_map = req.AsMap();
+    const auto& r_map = req.AsDict();
     if (r_map.at("type"s).AsString() == "Stop"s) {
       StopData stop = ProcessStop(r_map);
       c.AddStop(stop.name, stop.coordinates);
@@ -42,7 +42,7 @@ StopData JSONreader::ProcessStop(const json::Dict& stop_map) const {
   stop.name = stop_map.at("name"s).AsString();
   stop.coordinates.lat = stop_map.at("latitude"s).AsDouble();
   stop.coordinates.lng = stop_map.at("longitude"s).AsDouble();
-  for (const auto& [name, dist] : stop_map.at("road_distances"s).AsMap()) {
+  for (const auto& [name, dist] : stop_map.at("road_distances"s).AsDict()) {
     stop.distances.emplace_back(
         std::pair<std::string_view, size_t>{name, dist.AsInt()});
   }
@@ -65,12 +65,12 @@ RouteData JSONreader::ProcessRoute(const json::Dict& r_map) const {
   return route;
 }
 
-const json::Array& JSONreader::GetStatRequests() const {
-  return document_.GetRoot().AsMap().at("stat_requests"s).AsArray();
+const json::Node& JSONreader::GetStatRequests() const {
+  return document_.GetRoot().AsDict().at("stat_requests"s);
 }
 
-const json::Dict& JSONreader::GetRenderSettings() const {
-  return document_.GetRoot().AsMap().at("render_settings"s).AsMap();
+const json::Node& JSONreader::GetRenderSettings() const {
+  return document_.GetRoot().AsDict().at("render_settings"s);
 }
 
 }  // namespace jreader

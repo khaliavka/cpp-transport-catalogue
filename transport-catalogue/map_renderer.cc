@@ -112,7 +112,8 @@ void MapRenderer::MakeRouteLabels(const std::vector<domain::Route>& routes,
   }
 }
 
-void MapRenderer::SetRenderSettings(const json::Dict& s) {
+void MapRenderer::SetRenderSettings(const json::Node& settings) {
+  auto& s = settings.AsDict();
   settings_.width = s.at("width"s).AsDouble();
   settings_.height = s.at("height"s).AsDouble();
   settings_.padding = s.at("padding"s).AsDouble();

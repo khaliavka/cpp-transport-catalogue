@@ -18,7 +18,7 @@ using namespace std::literals;
 class MapRenderer {
  public:
   void RenderMap(const catalogue::TransportCatalogue& cat, std::ostream& out);
-  void SetRenderSettings(const json::Dict& s);
+  void SetRenderSettings(const json::Node& settings);
 
  private:
   using Palette = std::vector<svg::Color>;

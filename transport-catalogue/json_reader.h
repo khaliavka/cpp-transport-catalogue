@@ -11,8 +11,8 @@ class JSONreader {
  public:
   JSONreader(json::Document d);
   void ProcessBaseRequests(catalogue::TransportCatalogue& c);
-  const json::Array& GetStatRequests() const;
-  const json::Dict& GetRenderSettings() const;
+  const json::Node& GetStatRequests() const;
+  const json::Node& GetRenderSettings() const;
 
  private:
   domain::StopData ProcessStop(const json::Dict& stop_map) const;

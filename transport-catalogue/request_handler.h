@@ -12,13 +12,14 @@ class RequestHandler {
  public:
   void ProcessStatRequests(const catalogue::TransportCatalogue& c,
                            mrenderer::MapRenderer& mr,
-                           const json::Array& stat_reqs);
+                           const json::Node& stat_reqs);
+
   void PrintRequests(std::ostream& out) const;
 
  private:
   json::Dict ErrorMessage(int id) const;
 
-  json::Array out_;
+  json::Node out_;
 };
 
 /*
