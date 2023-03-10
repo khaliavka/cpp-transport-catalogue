@@ -91,7 +91,7 @@ void RequestHandler::ProcessStatRequests(const TransportCatalogue& c,
           .EndDict();
     }
   }
-  out_ = body_arr.EndArray().Build();
+  out_ = move(body_arr.EndArray().Build());
 }
 
 void RequestHandler::PrintRequests(std::ostream& out) const {
