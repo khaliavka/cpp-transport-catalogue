@@ -42,6 +42,7 @@ void RequestHandler::ProcessStatRequests(const TransportCatalogue& c,
   for (const auto& req : stat_reqs.AsArray()) {
     const auto& r_dict = req.AsDict();
     int id = r_dict.at("id"s).AsInt();
+
     if (r_dict.at("type"s).AsString() == "Stop"s) {
       const auto stop = c.GetStopInfo(r_dict.at("name"s).AsString());
       if (stop.is_found) {
@@ -58,6 +59,7 @@ void RequestHandler::ProcessStatRequests(const TransportCatalogue& c,
         body_arr.Value(move(ErrorMessage(id)));
       }
     }
+
     if (r_dict.at("type"s).AsString() == "Bus"s) {
       const auto route = c.GetRouteInfo(r_dict.at("name"s).AsString());
       if (route.is_found) {
@@ -77,6 +79,7 @@ void RequestHandler::ProcessStatRequests(const TransportCatalogue& c,
         body_arr.Value(move(ErrorMessage(id)));
       }
     }
+    
     if (r_dict.at("type"s).AsString() == "Map"s) {
       std::ostringstream os;
       mr.RenderMap(c, os);
@@ -90,6 +93,7 @@ void RequestHandler::ProcessStatRequests(const TransportCatalogue& c,
   }
   out_ = body_arr.EndArray().Build();
 }
+
 void RequestHandler::PrintRequests(std::ostream& out) const {
   Print(Document{out_}, out);
 }
