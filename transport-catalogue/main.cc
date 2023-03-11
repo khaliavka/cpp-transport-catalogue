@@ -66,37 +66,36 @@ namespace test {
 //   return;
 // }
 
-void TestMR() {
-  using namespace std;
-  using namespace jreader;
-  using namespace mrenderer;
-  using namespace catalogue;
+// void TestMR() {
+//   using namespace std;
+//   using namespace jreader;
+//   using namespace mrenderer;
+//   using namespace catalogue;
 
-  JSONreader jr(json::Load(cin));
-  TransportCatalogue c;
-  jr.ProcessBaseRequests(c);
+//   JSONreader jr(json::Load(cin));
+//   TransportCatalogue c;
+//   jr.ProcessBaseRequests(c);
 
-  MapRenderer mr;
-  mr.SetRenderSettings(jr.GetRenderSettings());
-  mr.RenderMap(c, cout);
-  return;
-}
+//   MapRenderer mr;
+//   mr.SetRenderSettings(jr.GetRenderSettings());
+//   mr.RenderMap(c, cout);
+//   return;
+// }
 }  // namespace test
 
 int main() {
-  using namespace std;
   using namespace jreader;
   using namespace mrenderer;
   using namespace rhandler;
   using namespace catalogue;
 
-  JSONreader jr(json::Load(cin));
+  JSONreader jr(json::Load(std::cin));
   TransportCatalogue c;
   jr.ProcessBaseRequests(c);
   MapRenderer mr;
   mr.SetRenderSettings(jr.GetRenderSettings());
   RequestHandler rh;
   rh.ProcessStatRequests(c, mr, jr.GetStatRequests());
-  rh.PrintRequests(cout);
+  rh.PrintRequests(std::cout);
   return 0;
 }

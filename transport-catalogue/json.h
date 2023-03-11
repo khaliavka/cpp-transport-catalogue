@@ -24,81 +24,32 @@ class Node final : private std::variant<std::nullptr_t, Array, Dict, bool, int,
   using Value = variant;
   Node(Value val) : variant(std::move(val)) {}
 
-  bool IsInt() const { return std::holds_alternative<int>(*this); }
+  bool IsInt() const;
+  int AsInt() const;
 
-  int AsInt() const {
-    using namespace std::literals;
-    if (!IsInt()) {
-      throw std::logic_error("Not an int"s);
-    }
-    return std::get<int>(*this);
-  }
+  bool IsPureDouble() const;
+  bool IsDouble() const;
+  double AsDouble() const;
 
-  bool IsPureDouble() const { return std::holds_alternative<double>(*this); }
+  bool IsBool() const;
+  bool AsBool() const;
 
-  bool IsDouble() const { return IsInt() || IsPureDouble(); }
+  bool IsNull() const;
 
-  double AsDouble() const {
-    using namespace std::literals;
-    if (!IsDouble()) {
-      throw std::logic_error("Not a double"s);
-    }
-    return IsPureDouble() ? std::get<double>(*this) : AsInt();
-  }
+  bool IsArray() const;
+  const Array& AsArray() const;
+  Array& AsModArray() const;
 
-  bool IsBool() const { return std::holds_alternative<bool>(*this); }
+  bool IsString() const;
+  const std::string& AsString() const;
 
-  bool AsBool() const {
-    using namespace std::literals;
-    if (!IsBool()) {
-      throw std::logic_error("Not a bool"s);
-    }
+  bool IsDict() const;
+  const Dict& AsDict() const;
+  Dict& AsModDict() const;
 
-    return std::get<bool>(*this);
-  }
+  bool operator==(const Node& rhs) const;
 
-  bool IsNull() const { return std::holds_alternative<std::nullptr_t>(*this); }
-
-  bool IsArray() const { return std::holds_alternative<Array>(*this); }
-
-  const Array& AsArray() const {
-    using namespace std::literals;
-    if (!IsArray()) {
-      throw std::logic_error("Not an array"s);
-    }
-    return std::get<Array>(*this);
-  }
-
-  Array& AsModArray() const { return const_cast<Array&>(AsArray()); }
-
-  bool IsString() const { return std::holds_alternative<std::string>(*this); }
-  
-  const std::string& AsString() const {
-    using namespace std::literals;
-    if (!IsString()) {
-      throw std::logic_error("Not a string"s);
-    }
-
-    return std::get<std::string>(*this);
-  }
-
-  bool IsDict() const { return std::holds_alternative<Dict>(*this); }
-
-  const Dict& AsDict() const {
-    using namespace std::literals;
-    if (!IsDict()) {
-      throw std::logic_error("Not a dict"s);
-    }
-    return std::get<Dict>(*this);
-  }
-
-  Dict& AsModDict() { return const_cast<Dict&>(AsDict()); }
-
-  bool operator==(const Node& rhs) const {
-    return GetValue() == rhs.GetValue();
-  }
-
-  const Value& GetValue() const { return *this; }
+  const Value& GetValue() const;
 };
 
 inline bool operator!=(const Node& lhs, const Node& rhs) {
@@ -108,9 +59,7 @@ inline bool operator!=(const Node& lhs, const Node& rhs) {
 class Document {
  public:
   explicit Document(Node root) : root_(std::move(root)) {}
-
-  const Node& GetRoot() const { return root_; }
-
+  const Node& GetRoot() const;
  private:
   Node root_;
 };
