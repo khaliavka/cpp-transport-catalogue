@@ -11,7 +11,7 @@
 #include "svg.h"
 #include "transport_catalogue.h"
 
-namespace mrenderer {
+namespace map_renderer {
 
 using namespace std::literals;
 
@@ -44,26 +44,26 @@ class MapRenderer {
     Palette color_palette;
   };
 
-  void MakeRoutePolylines(const std::vector<domain::Route>& routes,
+  void MakeBusPolylines(const std::vector<domain::Bus>& buses,
                           const geo::SphereProjector& projector);
 
-  void MakeRouteLabels(const std::vector<domain::Route>& routes,
+  void MakeBusLabels(const std::vector<domain::Bus>& buses,
                        const geo::SphereProjector& projector);
 
   template <typename T>
-  void MakeStopCircles(const T& unique, const geo::SphereProjector& projector);
+  void MakeStopCircles(const T& unique_stops, const geo::SphereProjector& projector);
 
   template <typename T>
-  void MakeStopLabels(const T& unique, const geo::SphereProjector& projector);
+  void MakeStopLabels(const T& unique_stops, const geo::SphereProjector& projector);
 
   svg::Document document_;
   RenderSettings settings_;
 };
 
 template <typename T>
-void MapRenderer::MakeStopCircles(const T& unique,
+void MapRenderer::MakeStopCircles(const T& unique_stops,
                                   const geo::SphereProjector& projector) {
-  for (const auto& u : unique) {
+  for (const auto& u : unique_stops) {
     svg::Circle c;
     c.SetCenter(std::move(projector(u.coordinates)));
     c.SetRadius(settings_.stop_radius);
@@ -72,9 +72,9 @@ void MapRenderer::MakeStopCircles(const T& unique,
   }
 }
 template <typename T>
-void MapRenderer::MakeStopLabels(const T& unique,
+void MapRenderer::MakeStopLabels(const T& unique_stops,
                                  const geo::SphereProjector& projector) {
-  for (const auto& u : unique) {
+  for (const auto& u : unique_stops) {
     svg::Text t;
     t.SetPosition(std::move(projector(u.coordinates)));
     t.SetData(std::move(std::string{u.name}));
@@ -95,4 +95,4 @@ void MapRenderer::MakeStopLabels(const T& unique,
     document_.Add(std::move(t));
   }
 }
-}  // namespace mrenderer
+}  // namespace map_renderer

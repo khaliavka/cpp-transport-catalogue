@@ -14,7 +14,7 @@
 
 namespace io {
 
-enum class QueryType { ADD_STOP, ADD_ROUTE, GET_ROUTE_INFO, GET_STOP_INFO };
+enum class QueryType { ADD_STOP, ADD_BUS, GET_BUS_INFO, GET_STOP_INFO };
 
 class InputReader {
  public:
@@ -40,8 +40,8 @@ class InputReader {
   std::vector<std::string_view> Chop(std::string_view str, std::string_view by);
   Query ParseQuery(std::string_view raw_query);
   domain::StopData ParseAddStop(std::string_view str);
-  domain::RouteData ParseAddRoute(std::string_view str);
-  std::string_view ParseGetRouteInfo(std::string_view str);
+  domain::BusData ParseAddBus(std::string_view str);
+  std::string_view ParseGetBusInfo(std::string_view str);
   std::string_view ParseGetStopInfo(std::string_view str);
 };
 

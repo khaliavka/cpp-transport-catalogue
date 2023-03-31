@@ -75,8 +75,8 @@ InputReader::Query InputReader::ParseQuery(std::string_view raw_query) {
   }
   if (type == "Bus"sv) {
     query.type = (data.find(":"sv) != std::string_view::npos)
-                     ? QueryType::ADD_ROUTE
-                     : QueryType::GET_ROUTE_INFO;
+                     ? QueryType::ADD_BUS
+                     : QueryType::GET_BUS_INFO;
   }
   query.data = data;
   return query;
@@ -97,9 +97,9 @@ domain::StopData InputReader::ParseAddStop(std::string_view str) {
           move(distances)};
 }
 
-domain::RouteData InputReader::ParseAddRoute(std::string_view str) {
+domain::BusData InputReader::ParseAddBus(std::string_view str) {
   using namespace std::literals;
-  domain::RouteData result;
+  domain::BusData result;
   auto [name, stops] = Split(str, ":"sv);
   name = Crop(name, " "sv);
   result.name = name;
@@ -116,7 +116,7 @@ domain::RouteData InputReader::ParseAddRoute(std::string_view str) {
   return result;
 }
 
-std::string_view InputReader::ParseGetRouteInfo(std::string_view str) {
+std::string_view InputReader::ParseGetBusInfo(std::string_view str) {
   using namespace std::literals;
   return Crop(str, " "sv);
 }
@@ -130,7 +130,7 @@ void InputReader::ProcessQueries(catalogue::TransportCatalogue& c) {
   for (; !buffer_.empty();) {
     auto query = ParseQuery(buffer_.front());
     domain::StopData stop;
-    domain::RouteData route;
+    domain::BusData bus;
     switch (query.type) {
       case QueryType::ADD_STOP:
         stop = ParseAddStop(query.data);
@@ -140,13 +140,13 @@ void InputReader::ProcessQueries(catalogue::TransportCatalogue& c) {
           c.SetDistance(stop.name, name, dist);
         }
         break;
-      case QueryType::ADD_ROUTE:
-        route = ParseAddRoute(query.data);
-        c.AddRoute(route.name, route.stops, route.is_roundtrip);
+      case QueryType::ADD_BUS:
+        bus = ParseAddBus(query.data);
+        c.AddBus(bus.name, bus.stops, bus.is_roundtrip);
         break;
-      case QueryType::GET_ROUTE_INFO:
-        stat_reader_.PrintRouteInfo(
-            c.GetRouteInfo(ParseGetRouteInfo(query.data)));
+      case QueryType::GET_BUS_INFO:
+        stat_reader_.PrintBusInfo(
+            c.GetBusInfo(ParseGetBusInfo(query.data)));
         break;
       case QueryType::GET_STOP_INFO:
         stat_reader_.PrintStopInfo(c.GetStopInfo(ParseGetStopInfo(query.data)));

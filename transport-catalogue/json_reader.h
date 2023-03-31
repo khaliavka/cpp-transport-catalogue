@@ -5,7 +5,7 @@
 #include "json.h"
 #include "transport_catalogue.h"
 
-namespace jreader {
+namespace json_reader {
 
 class JSONreader {
  public:
@@ -13,12 +13,12 @@ class JSONreader {
   void ProcessBaseRequests(catalogue::TransportCatalogue& c);
   const json::Node& GetStatRequests() const;
   const json::Node& GetRenderSettings() const;
+  const json::Node& GetRoutingSettings() const;
 
  private:
   domain::StopData ProcessStop(const json::Dict& stop_map) const;
-  domain::RouteData ProcessRoute(const json::Dict& r_map) const;
-  
+  domain::BusData ProcessBus(const json::Dict& bus_as_dict) const;
   json::Document document_;
 };
 
-}  // namespace jreader
+}  // namespace json_reader

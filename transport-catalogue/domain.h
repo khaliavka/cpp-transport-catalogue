@@ -13,7 +13,7 @@ struct Stop {
   geo::Coordinates coordinates;
 };
 
-struct Route {
+struct Bus {
   std::string_view name;
   std::vector<Stop> stops;
   bool is_roundtrip = false;
@@ -25,7 +25,7 @@ struct StopData {
   std::vector<std::pair<std::string_view, size_t>> distances;
 };
 
-struct RouteData {
+struct BusData {
   std::string_view name;
   std::vector<std::string_view> stops;
   bool is_roundtrip = false;

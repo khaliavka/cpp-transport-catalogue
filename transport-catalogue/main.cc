@@ -84,9 +84,9 @@ namespace test {
 }  // namespace test
 
 int main() {
-  using namespace jreader;
-  using namespace mrenderer;
-  using namespace rhandler;
+  using namespace json_reader;
+  using namespace map_renderer;
+  using namespace request_handler;
   using namespace catalogue;
 
   JSONreader jr(json::Load(std::cin));

@@ -9,57 +9,55 @@
 #include "json.h"
 #include "svg.h"
 
-namespace mrenderer {
+namespace map_renderer {
 
 using namespace std::literals;
 
 void MapRenderer::RenderMap(const catalogue::TransportCatalogue& cat,
                             std::ostream& out) {
-  auto r_names = cat.GetRouteNames();
-  std::sort(r_names.begin(), r_names.end());
+  auto bus_names = cat.GetBusNames();
+  std::sort(bus_names.begin(), bus_names.end());
   std::vector<geo::Coordinates> sp_init;
-  std::vector<domain::Route> routes;
-
+  std::vector<domain::Bus> buses;
   struct Cmp {
     bool operator()(const domain::Stop& lhs, const domain::Stop& rhs) const {
       return lhs.name < rhs.name;
     }
   };
-  std::set<domain::Stop, Cmp> unique;
-
-  for (const auto& r : r_names) {
-    domain::Route route;
-    route.name = r;
-    for (const auto& s : cat.GetStopsForRoute(r)) {
+  std::set<domain::Stop, Cmp> unique_stops;
+  for (const auto& b : bus_names) {
+    domain::Bus bus;
+    bus.name = b;
+    for (const auto& s : cat.GetStopsForBus(b)) {
       auto geo_coords = cat.GetCoordinates(s);
       sp_init.push_back(geo_coords);
-      route.stops.emplace_back(domain::Stop{s, geo_coords});
-      unique.emplace(domain::Stop{s, geo_coords});
+      bus.stops.emplace_back(domain::Stop{s, geo_coords});
+      unique_stops.emplace(domain::Stop{s, geo_coords});
     }
-    route.is_roundtrip = cat.IsRoundTrip(r);
-    if (!route.stops.empty()) {
-      routes.push_back(std::move(route));
+    bus.is_roundtrip = cat.IsRoundTrip(b);
+    if (!bus.stops.empty()) {
+      buses.push_back(std::move(bus));
     }
   }
   geo::SphereProjector projector(sp_init.cbegin(), sp_init.cend(),
                                  settings_.width, settings_.height,
                                  settings_.padding);
 
-  MakeRoutePolylines(routes, projector);
-  MakeRouteLabels(routes, projector);
-  MakeStopCircles(unique, projector);
-  MakeStopLabels(unique, projector);
+  MakeBusPolylines(buses, projector);
+  MakeBusLabels(buses, projector);
+  MakeStopCircles(unique_stops, projector);
+  MakeStopLabels(unique_stops, projector);
 
   document_.Render(out);
   return;
 }
 
-void MapRenderer::MakeRoutePolylines(const std::vector<domain::Route>& routes,
+void MapRenderer::MakeBusPolylines(const std::vector<domain::Bus>& buses,
                                      const geo::SphereProjector& projector) {
   const auto pal_sz = settings_.color_palette.size();
-  for (size_t i = 0; i < routes.size(); ++i) {
+  for (size_t i = 0; i < buses.size(); ++i) {
     svg::Polyline p;
-    for (const auto& stop : routes[i].stops) {
+    for (const auto& stop : buses[i].stops) {
       p.AddPoint(std::move(projector(stop.coordinates)));
     }
     p.SetFillColor(std::move(svg::NoneColor));
@@ -71,13 +69,13 @@ void MapRenderer::MakeRoutePolylines(const std::vector<domain::Route>& routes,
   }
 }
 
-void MapRenderer::MakeRouteLabels(const std::vector<domain::Route>& routes,
+void MapRenderer::MakeBusLabels(const std::vector<domain::Bus>& buses,
                                   const geo::SphereProjector& projector) {
   const auto pal_sz = settings_.color_palette.size();
-  for (size_t i = 0; i < routes.size(); ++i) {
+  for (size_t i = 0; i < buses.size(); ++i) {
     svg::Text t;
-    t.SetPosition(std::move(projector(routes[i].stops.front().coordinates)));
-    t.SetData(std::move(std::string{routes[i].name}));
+    t.SetPosition(std::move(projector(buses[i].stops.front().coordinates)));
+    t.SetData(std::move(std::string{buses[i].name}));
     t.SetOffset(settings_.bus_label_offset);
     t.SetFontSize(settings_.bus_label_font_size);
     t.SetFontFamily(std::move("Verdana"s));
@@ -92,14 +90,14 @@ void MapRenderer::MakeRouteLabels(const std::vector<domain::Route>& routes,
 
     t.SetFillColor(settings_.color_palette[i % pal_sz]);
 
-    if (routes[i].is_roundtrip) {
+    if (buses[i].is_roundtrip) {
       document_.Add(std::move(t_pad));
       document_.Add(std::move(t));
     } else {
       document_.Add(t_pad);
       document_.Add(t);
 
-      const auto& s = routes[i].stops;
+      const auto& s = buses[i].stops;
       if (s.front().name != s[s.size() / 2].name) {
         auto second_end_pos = projector(s[s.size() / 2].coordinates);
         t_pad.SetPosition(second_end_pos);
@@ -119,32 +117,25 @@ void MapRenderer::SetRenderSettings(const json::Node& settings) {
   settings_.padding = s.at("padding"s).AsDouble();
   settings_.line_width = s.at("line_width"s).AsDouble();
   settings_.stop_radius = s.at("stop_radius"s).AsDouble();
-
   settings_.bus_label_font_size =
       static_cast<uint32_t>(s.at("bus_label_font_size"s).AsInt());
-
   const auto& blo_arr = s.at("bus_label_offset"s).AsArray();
   settings_.bus_label_offset =
       std::move(svg::Point{blo_arr[0].AsDouble(), blo_arr[1].AsDouble()});
-
   settings_.stop_label_font_size =
       static_cast<uint32_t>(s.at("stop_label_font_size"s).AsInt());
-
   const auto& slo_arr = s.at("stop_label_offset"s).AsArray();
   settings_.stop_label_offset =
       std::move(svg::Point{slo_arr[0].AsDouble(), slo_arr[1].AsDouble()});
-
   const auto& u_color = s.at("underlayer_color"s);
   if (u_color.IsArray()) {
     const auto& clr_arr = u_color.AsArray();
-
     if (clr_arr.size() == 4) {
       settings_.underlayer_color = std::move(svg::Rgba{
           static_cast<uint8_t>(clr_arr[0].AsInt()),
           static_cast<uint8_t>(clr_arr[1].AsInt()),
           static_cast<uint8_t>(clr_arr[2].AsInt()), clr_arr[3].AsDouble()});
     }
-
     if (clr_arr.size() == 3) {
       settings_.underlayer_color =
           std::move(svg::Rgb{static_cast<uint8_t>(clr_arr[0].AsInt()),
@@ -152,13 +143,10 @@ void MapRenderer::SetRenderSettings(const json::Node& settings) {
                              static_cast<uint8_t>(clr_arr[2].AsInt())});
     }
   }
-
   if (u_color.IsString()) {
     settings_.underlayer_color = u_color.AsString();
   }
-
   settings_.underlayer_width = s.at("underlayer_width"s).AsDouble();
-
   const auto& palette = s.at("color_palette"s).AsArray();
   for (const auto& color : palette) {
     if (color.IsString()) {
@@ -182,4 +170,4 @@ void MapRenderer::SetRenderSettings(const json::Node& settings) {
   }
 }
 
-}  // namespace mrenderer
+}  // namespace map_renderer

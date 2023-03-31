@@ -6,18 +6,26 @@
 #include "map_renderer.h"
 #include "transport_catalogue.h"
 
-namespace rhandler {
+namespace request_handler {
 
 class RequestHandler {
  public:
-  void ProcessStatRequests(const catalogue::TransportCatalogue& c,
-                           mrenderer::MapRenderer& mr,
+  void ProcessStatRequests(const catalogue::TransportCatalogue& cat,
+                           map_renderer::MapRenderer& mr,
                            const json::Node& stat_reqs);
 
   void PrintRequests(std::ostream& out) const;
 
  private:
-  json::Dict ErrorMessage(int id) const;
+  json::Node ProcessStopRequest(const catalogue::TransportCatalogue& cat,
+                                const json::Node& request) const;
+  json::Node ProcessBusRequest(const catalogue::TransportCatalogue& cat,
+                               const json::Node& request) const;
+  json::Node ProcessRouteRequest(const json::Node& request) const;
+  json::Node ProcessMapRequest(const catalogue::TransportCatalogue& cat,
+                               map_renderer::MapRenderer& mr,
+                               const json::Node& request) const;
+  json::Node ErrorMessage(int id) const;
 
   json::Node out_;
 };
@@ -62,4 +70,4 @@ renderer_;
 };
 */
 
-}  // namespace rhandler
+}  // namespace request_handler
