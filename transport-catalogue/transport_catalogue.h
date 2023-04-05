@@ -34,12 +34,13 @@ class TransportCatalogue {
   void AddStop(std::string_view name, geo::Coordinates coordinates);
   void AddDraftStop(std::string_view name, geo::Coordinates coordinates);
   void AddBus(std::string_view route_name,
-                const std::vector<std::string_view>& stop_names,
-                bool is_roundtrip);
+              const std::vector<std::string_view>& stop_names,
+              bool is_roundtrip);
   void SetDistance(std::string_view from, std::string_view to, size_t d);
   size_t GetDistance(std::string_view from, std::string_view to) const;
   BusInfo GetBusInfo(std::string_view name) const;
   StopInfo GetStopInfo(std::string_view name) const;
+  std::vector<std::string_view> GetReachableStopNames() const;
   std::vector<std::string_view> GetBusNames() const;
   std::vector<std::string_view> GetStopsForBus(std::string_view name) const;
   geo::Coordinates GetCoordinates(std::string_view name) const;
@@ -60,8 +61,8 @@ class TransportCatalogue {
     bool is_roundtrip;
   };
 
-  void AddStopInternal(std::string_view name,
-                       geo::Coordinates coordinates, bool is_consistent);
+  void AddStopInternal(std::string_view name, geo::Coordinates coordinates,
+                       bool is_consistent);
 
   std::deque<Stop> stops_;
   std::deque<Bus> buses_;

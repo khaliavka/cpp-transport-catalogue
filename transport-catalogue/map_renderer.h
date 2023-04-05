@@ -15,46 +15,48 @@ namespace map_renderer {
 
 using namespace std::literals;
 
+using Palette = std::vector<svg::Color>;
+
+struct RenderSettings {
+  double width;
+  double height;
+
+  double padding;
+
+  double line_width;
+  double stop_radius;
+
+  uint32_t bus_label_font_size;
+  svg::Point bus_label_offset;
+
+  uint32_t stop_label_font_size;
+  svg::Point stop_label_offset;
+
+  svg::Color underlayer_color;
+  double underlayer_width;
+
+  Palette color_palette;
+};
+
 class MapRenderer {
  public:
+  MapRenderer(RenderSettings rs) : settings_{std::move(rs)} {}
   void RenderMap(const catalogue::TransportCatalogue& cat, std::ostream& out);
-  void SetRenderSettings(const json::Node& settings);
 
  private:
-  using Palette = std::vector<svg::Color>;
-
-  struct RenderSettings {
-    double width;
-    double height;
-
-    double padding;
-
-    double line_width;
-    double stop_radius;
-
-    uint32_t bus_label_font_size;
-    svg::Point bus_label_offset;
-
-    uint32_t stop_label_font_size;
-    svg::Point stop_label_offset;
-
-    svg::Color underlayer_color;
-    double underlayer_width;
-
-    Palette color_palette;
-  };
-
   void MakeBusPolylines(const std::vector<domain::Bus>& buses,
-                          const geo::SphereProjector& projector);
+                        const geo::SphereProjector& projector);
 
   void MakeBusLabels(const std::vector<domain::Bus>& buses,
+                     const geo::SphereProjector& projector);
+
+  template <typename T>
+  void MakeStopCircles(const T& unique_stops,
                        const geo::SphereProjector& projector);
 
   template <typename T>
-  void MakeStopCircles(const T& unique_stops, const geo::SphereProjector& projector);
-
-  template <typename T>
-  void MakeStopLabels(const T& unique_stops, const geo::SphereProjector& projector);
+  void MakeStopLabels(const T& unique_stops,
+                      const geo::SphereProjector& projector);
 
   svg::Document document_;
   RenderSettings settings_;

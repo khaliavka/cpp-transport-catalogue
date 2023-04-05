@@ -5,14 +5,16 @@
 #include "json_reader.h"
 #include "map_renderer.h"
 #include "transport_catalogue.h"
+#include "transport_router.h"
 
 namespace request_handler {
 
 class RequestHandler {
  public:
-  void ProcessStatRequests(const catalogue::TransportCatalogue& cat,
-                           map_renderer::MapRenderer& mr,
-                           const json::Node& stat_reqs);
+  void ProcessStatRequests(
+      const catalogue::TransportCatalogue& cat,
+      const transport_router::TransportRouter& transport_router,
+      map_renderer::MapRenderer& mr, const json::Node& stat_reqs);
 
   void PrintRequests(std::ostream& out) const;
 
@@ -21,7 +23,9 @@ class RequestHandler {
                                 const json::Node& request) const;
   json::Node ProcessBusRequest(const catalogue::TransportCatalogue& cat,
                                const json::Node& request) const;
-  json::Node ProcessRouteRequest(const json::Node& request) const;
+  json::Node ProcessRouteRequest(
+      const transport_router::TransportRouter& transport_router,
+      const json::Node& request) const;
   json::Node ProcessMapRequest(const catalogue::TransportCatalogue& cat,
                                map_renderer::MapRenderer& mr,
                                const json::Node& request) const;

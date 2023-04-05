@@ -97,6 +97,17 @@ StopInfo TransportCatalogue::GetStopInfo(std::string_view name) const {
   return {stop->name, stop->buses, true};
 }
 
+std::vector<std::string_view> TransportCatalogue::GetReachableStopNames() const {
+  std::vector<std::string_view> result;
+  for (const auto& stop : stops_) {
+    if (stop.buses.empty()) {
+      continue;
+    }
+    result.push_back(stop.name);
+  }
+  return result;
+}
+
 std::vector<std::string_view> TransportCatalogue::GetBusNames() const {
   std::vector<std::string_view> result;
   for (const auto& [name, _] : busname_to_bus_) {
@@ -107,10 +118,10 @@ std::vector<std::string_view> TransportCatalogue::GetBusNames() const {
 
 std::vector<std::string_view> TransportCatalogue::GetStopsForBus(
     std::string_view name) const {
-  std::vector<std::string_view> result;
   if (busname_to_bus_.count(name) == 0) {
     return {};
   }
+  std::vector<std::string_view> result;
   const auto& stops = busname_to_bus_.at(name)->stops;
   for (const auto& stop : stops) {
     result.push_back(stop->name);

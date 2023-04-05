@@ -10,6 +10,7 @@
 #include "json_reader.h"
 #include "map_renderer.h"
 #include "transport_catalogue.h"
+#include "transport_router.h"
 
 namespace request_handler {
 
@@ -78,10 +79,15 @@ Node RequestHandler::ProcessBusRequest(const TransportCatalogue& cat,
   return bus.Build();
 }
 
-Node RequestHandler::ProcessRouteRequest(const Node& request) const {
+Node RequestHandler::ProcessRouteRequest(
+    const transport_router::TransportRouter& transport_router,
+    const Node& request) const {
   using namespace std;
   Builder route{};
   int id = request.AsDict().at("id"s).AsInt();
+  const auto& from = request.AsDict().at("from"s).AsString();
+  const auto& to = request.AsDict().at("to"s).AsString();
+  transport_router.BuildRoute(from, to);
   if (true) {
     route.StartDict()
         .Key(move("request_id"s))
@@ -115,13 +121,14 @@ Node RequestHandler::ProcessMapRequest(const TransportCatalogue& cat,
       .Build();
 }
 
-void RequestHandler::ProcessStatRequests(const TransportCatalogue& cat,
-                                         map_renderer::MapRenderer& mr,
-                                         const Node& stat_reqs) {
+void RequestHandler::ProcessStatRequests(
+    const TransportCatalogue& cat,
+    const transport_router::TransportRouter& transport_router,
+    map_renderer::MapRenderer& mr, const Node& stat_requests) {
   using namespace std;
   Builder body{};
   auto body_array = body.StartArray();
-  for (const auto& request : stat_reqs.AsArray()) {
+  for (const auto& request : stat_requests.AsArray()) {
     const auto& type = request.AsDict().at("type"s).AsString();
     if (type == "Stop"s) {
       body_array.Value(ProcessStopRequest(cat, request).AsDict());
@@ -130,7 +137,7 @@ void RequestHandler::ProcessStatRequests(const TransportCatalogue& cat,
       body_array.Value(ProcessBusRequest(cat, request).AsDict());
     }
     if (type == "Route"s) {
-      body_array.Value(ProcessRouteRequest(request).AsDict());
+      body_array.Value(ProcessRouteRequest(transport_router, request).AsDict());
     }
     if (type == "Map"s) {
       body_array.Value(ProcessMapRequest(cat, mr, request).AsDict());

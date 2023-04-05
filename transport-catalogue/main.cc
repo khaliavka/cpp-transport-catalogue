@@ -9,6 +9,7 @@
 #include "map_renderer.h"
 #include "request_handler.h"
 #include "transport_catalogue.h"
+#include "transport_router.h"
 // #include "input_reader.h"
 
 namespace test {
@@ -29,16 +30,19 @@ namespace test {
 //   cat.AddStop("Universam2"s, {77.77, 99.99});
 //   cat.AddStop("Rasskazovka"s, {777.888, 888.777});
 
-//   cat.AddRoute("256"s, {"Biryulyovo Zapadnoye"s, "Biryusinka", "Universam"s}, false);
+//   cat.AddRoute("256"s, {"Biryulyovo Zapadnoye"s, "Biryusinka", "Universam"s},
+//   false);
 
 //   cat.AddStop("Biryulyovo Zapadnoye"s, {55.574371, 37.651700});
 //   cat.AddStop("Biryusinka"s, {55.581065, 37.648390});
 //   cat.AddStop("Biryulyovo Tovarnaya"s, {55.592028, 37.653656});
 //   cat.AddStop("Biryulyovo Passazhirskaya"s, {55.580999, 37.659164});
 //   cat.AddRoute("255"s, {"Biryulyovo Zapadnoye"s, "Biryusinka", "Universam"s,
-//                         "Biryulyovo Tovarnaya"s, "Biryulyovo Zapadnoye"s}, true);
+//                         "Biryulyovo Tovarnaya"s, "Biryulyovo Zapadnoye"s},
+//                         true);
 //   cat.AddRoute("254"s, {"Biryulyovo Zapadnoye"s, "Biryusinka", "Universam2"s,
-//                         "Biryulyovo Tovarnaya"s, "Biryulyovo Zapadnoye"s}, true);
+//                         "Biryulyovo Tovarnaya"s, "Biryulyovo Zapadnoye"s},
+//                         true);
 //   [[maybe_unused]] const RouteInfo r_256 = cat.GetRouteInfo("256"s);
 //   [[maybe_unused]] const StopInfo s_i = cat.GetStopInfo("Universam"s);
 //   return;
@@ -66,21 +70,19 @@ namespace test {
 //   return;
 // }
 
-// void TestMR() {
-//   using namespace std;
-//   using namespace jreader;
-//   using namespace mrenderer;
+// void TestMapRenderer() {
+//   using namespace json_reader;
+//   using namespace map_renderer;
+//   using namespace request_handler;
 //   using namespace catalogue;
 
-//   JSONreader jr(json::Load(cin));
-//   TransportCatalogue c;
-//   jr.ProcessBaseRequests(c);
-
-//   MapRenderer mr;
-//   mr.SetRenderSettings(jr.GetRenderSettings());
-//   mr.RenderMap(c, cout);
-//   return;
+//   JSONreader jr(json::Load(std::cin));
+//   TransportCatalogue cat;
+//   jr.ProcessBaseRequests(cat);
+//   MapRenderer mr{jr.GetRenderSettings()};
+//   mr.RenderMap(cat, std::cout);
 // }
+
 }  // namespace test
 
 int main() {
@@ -88,14 +90,17 @@ int main() {
   using namespace map_renderer;
   using namespace request_handler;
   using namespace catalogue;
+  using namespace transport_router;
 
-  JSONreader jr(json::Load(std::cin));
-  TransportCatalogue c;
-  jr.ProcessBaseRequests(c);
-  MapRenderer mr;
-  mr.SetRenderSettings(jr.GetRenderSettings());
-  RequestHandler rh;
-  rh.ProcessStatRequests(c, mr, jr.GetStatRequests());
-  rh.PrintRequests(std::cout);
+  JSONreader json_reader(json::Load(std::cin));
+  TransportCatalogue transport_catalogue;
+  json_reader.ProcessBaseRequests(transport_catalogue);
+  TransportRouter transport_router{json_reader.GetRoutingSettings(), transport_catalogue};
+  MapRenderer map_renderer{json_reader.GetRenderSettings()};
+  RequestHandler request_handler;
+  request_handler.ProcessStatRequests(transport_catalogue, transport_router,
+                                      map_renderer,
+                                      json_reader.GetStatRequests());
+  request_handler.PrintRequests(std::cout);
   return 0;
 }
