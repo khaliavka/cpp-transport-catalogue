@@ -27,13 +27,19 @@ struct Bus {
   double time;
 };
 
+using RouteElement = std::variant<Wait, Bus>;
+
+struct RouteInfo {
+  double weight;
+  std::optional<std::vector<RouteElement>> elements;
+};
+
 class TransportRouter {
  public:
-  using RouteElement = std::variant<Wait, Bus>;
   TransportRouter(RoutingSettings rs, const catalogue::TransportCatalogue& tc);
-  std::optional<std::vector<RouteElement>> BuildRoute(
+  std::optional<RouteInfo> BuildRoute(
       std::string_view from, std::string_view to) const;
-
+  int GetBusWaitTime() const;
  private:
   using Graph = graph::DirectedWeightedGraph<double>;
   using EdgeStruct = graph::Edge<double>;

@@ -87,17 +87,44 @@ Node RequestHandler::ProcessRouteRequest(
   int id = request.AsDict().at("id"s).AsInt();
   const auto& from = request.AsDict().at("from"s).AsString();
   const auto& to = request.AsDict().at("to"s).AsString();
-  transport_router.BuildRoute(from, to);
-  if (true) {
+  auto route_info = transport_router.BuildRoute(from, to);
+  if (route_info) {
     route.StartDict()
-        .Key(move("request_id"s))
+        .Key("request_id"s)
         .Value(id)
-        .Key(move("total_time"s))
-        .Value(42.4)
-        .Key(move("items"s))
-        .StartArray()
-        .EndArray()
-        .EndDict();
+        .Key("total_time"s)
+        .Value(route_info->weight)
+        .Key("items"s)
+        .StartArray();
+    int bus_wait_time = transport_router.GetBusWaitTime();
+    if (route_info->elements) {
+      for (const auto& element : route_info->elements.value()) {
+        if (std::holds_alternative<transport_router::Wait>(element)) {
+          const auto& wait_element = get<transport_router::Wait>(element);
+          route.StartDict()
+              .Key("type"s)
+              .Value("Wait"s)
+              .Key("stop_name"s)
+              .Value(move(string{wait_element.stop_name}))
+              .Key("time"s)
+              .Value(bus_wait_time)
+              .EndDict();
+        } else {
+          const auto& bus_element = std::get<transport_router::Bus>(element);
+          route.StartDict()
+              .Key("type"s)
+              .Value("Bus"s)
+              .Key("bus"s)
+              .Value(move(string{bus_element.bus_name}))
+              .Key("span_count"s)
+              .Value(bus_element.span_count)
+              .Key("time"s)
+              .Value(bus_element.time)
+              .EndDict();
+        }
+      }
+    }
+    route.EndArray().EndDict();
   } else {
     route.Value(ErrorMessage(id).AsDict());
   }
