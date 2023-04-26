@@ -1,9 +1,8 @@
 #include "transport_catalogue.h"
 
-#include <transport_catalogue.pb.h>
-
 #include <string>
 #include <string_view>
+#include <transport_catalogue.pb.h>
 
 #include "domain.h"
 #include "geo.h"
@@ -147,10 +146,10 @@ bool TransportCatalogue::IsRoundTrip(std::string_view name) const {
   return busname_to_bus_.at(name)->is_roundtrip;
 }
 
-void TransportCatalogue::SaveTo(std::ostream& output) const {
-  transport_catalogue_serialize::TransportCatalogue catalogue;
+void TransportCatalogue::SaveTo(
+    serialize_proto::TransportCatalogue& catalogue_proto) const {
   for (const auto& stop : stops_) {
-    auto serial_stop = catalogue.add_stop();
+    auto serial_stop = catalogue_proto.add_stop();
     serial_stop->set_id(stop.id);
     serial_stop->set_name(stop.name);
     serial_stop->mutable_coordinates()->set_lat(stop.coordinates.lat);
@@ -158,7 +157,7 @@ void TransportCatalogue::SaveTo(std::ostream& output) const {
     serial_stop->set_is_consistent(stop.is_consistent);
   }
   for (const auto& bus : buses_) {
-    auto serial_bus = catalogue.add_bus();
+    auto serial_bus = catalogue_proto.add_bus();
     serial_bus->set_name(bus.name);
     serial_bus->set_is_roundtrip(bus.is_roundtrip);
     for (auto stop : bus.stops) {
@@ -166,38 +165,38 @@ void TransportCatalogue::SaveTo(std::ostream& output) const {
     }
   }
   for (const auto& [key, val] : distances_) {
-    auto serial_dist = catalogue.add_distance();
+    auto serial_dist = catalogue_proto.add_distance();
     serial_dist->set_key(key);
     serial_dist->set_val(val);
   }
-  catalogue.SerializeToOstream(&output);
 }
 
-void TransportCatalogue::LoadFrom(std::istream& input) {
-  transport_catalogue_serialize::TransportCatalogue catalogue;
-  catalogue.ParseFromIstream(&input);
-  for (const auto& s : catalogue.stop()) {
-    Stop stop;
+void TransportCatalogue::LoadFrom(
+    const serialize_proto::TransportCatalogue& catalogue_proto) {
+  for (const auto& s : catalogue_proto.stop()) {
+    auto& stop = stops_.emplace_back(Stop{});
     stop.id = s.id();
     stop.name = s.name();
     stop.coordinates.lat = s.coordinates().lat();
     stop.coordinates.lng = s.coordinates().lng();
     stop.is_consistent = s.is_consistent();
-
-    stops_.push_back(std::move(stop));
+    stopname_to_stop_[stop.name] = &stop;
   }
-  current_id_ = stops_.size();
-  for (const auto& b : catalogue.bus()) {
-    Bus bus;
+  for (const auto& b : catalogue_proto.bus()) {
+    auto& bus = buses_.emplace_back(Bus{});
     bus.name = b.name();
     for (const auto& id : b.stop_id()) {
       bus.stops.push_back(&stops_[id]);
       bus.unique_stops.insert(&stops_[id]);
+      stops_[id].buses.insert(bus.name);
     }
     bus.is_roundtrip = b.is_roundtrip();
-    buses_.push_back(std::move(bus));
+    busname_to_bus_[bus.name] = &bus;
   }
-  for (const auto&)
+  for (const auto& d : catalogue_proto.distance()) {
+    distances_[d.key()] = d.val();
+  }
+  current_id_ = stops_.size();
 }
 
 }  // namespace catalogue

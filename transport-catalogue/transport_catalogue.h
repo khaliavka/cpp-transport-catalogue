@@ -9,6 +9,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include <transport_catalogue.pb.h>
+
+
 #include "domain.h"
 #include "geo.h"
 
@@ -45,8 +48,8 @@ class TransportCatalogue {
   std::vector<std::string_view> GetStopsForBus(std::string_view name) const;
   geo::Coordinates GetCoordinates(std::string_view name) const;
   bool IsRoundTrip(std::string_view name) const;
-  void SaveTo(std::ostream& output) const;
-  void LoadFrom(std::istream& input);
+  void SaveTo(serialize_proto::TransportCatalogue& catalogue_proto) const;
+  void LoadFrom(const serialize_proto::TransportCatalogue& catalogue_proto);
 
  private:
   void AddStopInternal(std::string_view name, geo::Coordinates coordinates,

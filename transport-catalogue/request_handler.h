@@ -15,7 +15,8 @@ class RequestHandler {
       const catalogue::TransportCatalogue& cat,
       const transport_router::TransportRouter& transport_router,
       map_renderer::MapRenderer& mr, const json::Node& stat_reqs);
-
+  void ProcessStatRequestsLite(const catalogue::TransportCatalogue& cat,
+                               const json::Node& stat_requests);
   void PrintRequests(std::ostream& out) const;
 
  private:

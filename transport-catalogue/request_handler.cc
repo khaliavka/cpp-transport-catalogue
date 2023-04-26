@@ -173,6 +173,23 @@ void RequestHandler::ProcessStatRequests(
   out_ = move(body_array.EndArray().Build());
 }
 
+void RequestHandler::ProcessStatRequestsLite(const TransportCatalogue& cat,
+                                             const Node& stat_requests) {
+  using namespace std;
+  Builder body{};
+  auto body_array = body.StartArray();
+  for (const auto& request : stat_requests.AsArray()) {
+    const auto& type = request.AsDict().at("type"s).AsString();
+    if (type == "Stop"s) {
+      body_array.Value(ProcessStopRequest(cat, request).AsDict());
+    }
+    if (type == "Bus"s) {
+      body_array.Value(ProcessBusRequest(cat, request).AsDict());
+    }
+  }
+  out_ = move(body_array.EndArray().Build());
+}
+
 void RequestHandler::PrintRequests(std::ostream& out) const {
   Print(Document{out_}, out);
 }

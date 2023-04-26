@@ -110,4 +110,55 @@ void MapRenderer::MakeBusLabels(const std::vector<domain::Bus>& buses,
   }
 }
 
+void MapRenderer::SaveColor(serialize_proto::Color* color_proto,
+                            const svg::Color& color) const {
+  if (std::holds_alternative<std::monostate>(color)) {
+    color_proto->set_variant(serialize_proto::ColorVariant::COLOR_UNSPECIFIED);
+  }
+  if (std::holds_alternative<std::string>(color)) {
+    color_proto->set_variant(serialize_proto::ColorVariant::COLOR_AS_STRING);
+    color_proto->set_as_string(std::get<std::string>(color));
+  }
+  if (std::holds_alternative<svg::Rgb>(color)) {
+    color_proto->set_variant(serialize_proto::ColorVariant::COLOR_AS_RGB);
+    color_proto->mutable_as_rgb_rgba()->set_r(std::get<svg::Rgb>(color).red);
+    color_proto->mutable_as_rgb_rgba()->set_g(std::get<svg::Rgb>(color).green);
+    color_proto->mutable_as_rgb_rgba()->set_b(std::get<svg::Rgb>(color).blue);
+  }
+  if (std::holds_alternative<svg::Rgba>(settings_.underlayer_color)) {
+    color_proto->set_variant(serialize_proto::ColorVariant::COLOR_AS_RGBA);
+    color_proto->mutable_as_rgb_rgba()->set_r(std::get<svg::Rgba>(color).red);
+    color_proto->mutable_as_rgb_rgba()->set_g(std::get<svg::Rgba>(color).green);
+    color_proto->mutable_as_rgb_rgba()->set_b(std::get<svg::Rgba>(color).blue);
+    color_proto->mutable_as_rgb_rgba()->set_a(
+        std::get<svg::Rgba>(color).opacity);
+  }
+}
+
+void MapRenderer::SaveTo(
+    serialize_proto::TransportCatalogue& catalogue_proto) const {
+  auto rs_proto = catalogue_proto.mutable_render_settings();
+  rs_proto->set_width(settings_.width);
+  rs_proto->set_height(settings_.height);
+  rs_proto->set_padding(settings_.padding);
+  rs_proto->set_line_width(settings_.line_width);
+  rs_proto->set_stop_radius(settings_.stop_radius);
+  rs_proto->set_bus_label_font_size(settings_.bus_label_font_size);
+  rs_proto->mutable_bus_label_offset()->set_x(settings_.bus_label_offset.x);
+  rs_proto->mutable_bus_label_offset()->set_y(settings_.bus_label_offset.y);
+  rs_proto->set_stop_label_font_size(settings_.stop_label_font_size);
+  rs_proto->mutable_stop_label_offset()->set_x(settings_.stop_label_offset.x);
+  rs_proto->mutable_stop_label_offset()->set_y(settings_.stop_label_offset.y);
+  auto muc = rs_proto->mutable_underlayer_color();
+  SaveColor(muc, settings_.underlayer_color);
+  rs_proto->set_underlayer_width(settings_.underlayer_width);
+  for (const auto& color : settings_.color_palette) {
+    SaveColor(rs_proto->add_color_palette(), color);
+  }
+}
+
+void LoadFrom(const serialize_proto::TransportCatalogue& catalogue_proto) {
+  //work here!
+}
+
 }  // namespace map_renderer

@@ -42,6 +42,8 @@ class MapRenderer {
  public:
   MapRenderer(RenderSettings rs) : settings_{std::move(rs)} {}
   void RenderMap(const catalogue::TransportCatalogue& cat, std::ostream& out);
+  void SaveTo(serialize_proto::TransportCatalogue& catalogue_proto) const;
+  void LoadFrom(const serialize_proto::TransportCatalogue& catalogue_proto);
 
  private:
   void MakeBusPolylines(const std::vector<domain::Bus>& buses,
@@ -57,6 +59,8 @@ class MapRenderer {
   template <typename T>
   void MakeStopLabels(const T& unique_stops,
                       const geo::SphereProjector& projector);
+
+  void SaveColor(serialize_proto::Color* color_proto, const svg::Color& color) const;
 
   svg::Document document_;
   RenderSettings settings_;
