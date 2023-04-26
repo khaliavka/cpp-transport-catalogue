@@ -7,6 +7,7 @@
 #include "domain.h"
 #include "json.h"
 #include "map_renderer.h"
+#include "serialization.h"
 #include "transport_catalogue.h"
 #include "transport_router.h"
 
@@ -20,7 +21,7 @@ using namespace transport_router;
 
 JSONreader::JSONreader(json::Document d) : document_(std::move(d)) {}
 
-void JSONreader::ProcessBaseRequests(TransportCatalogue& c) {
+void JSONreader::ProcessBaseRequests(TransportCatalogue& c) const {
   const auto& base_reqs =
       document_.GetRoot().AsDict().at("base_requests"s).AsArray();
   for (const auto& req : base_reqs) {
@@ -38,7 +39,6 @@ void JSONreader::ProcessBaseRequests(TransportCatalogue& c) {
       c.AddBus(bus.name, bus.stops, bus.is_roundtrip);
     }
   }
-  return;
 }
 
 StopData JSONreader::ProcessStop(const json::Dict& stop_as_dict) const {
@@ -48,7 +48,7 @@ StopData JSONreader::ProcessStop(const json::Dict& stop_as_dict) const {
   stop.coordinates.lng = stop_as_dict.at("longitude"s).AsDouble();
   for (const auto& [name, dist] : stop_as_dict.at("road_distances"s).AsDict()) {
     stop.distances.emplace_back(
-        std::pair<std::string_view, size_t>{name, dist.AsInt()});
+        std::pair<std::string_view, int>{name, dist.AsInt()});
   }
   return stop;
 }
@@ -141,6 +141,13 @@ RoutingSettings JSONreader::GetRoutingSettings() const {
   routing_settings.bus_wait_time = s.at("bus_wait_time"s).AsInt();
   routing_settings.bus_velocity = s.at("bus_velocity"s).AsDouble();
   return routing_settings;
+}
+
+serialization::SerializationSettings JSONreader::GetSerializationSettings()
+    const {
+  const auto& ser_settings =
+      document_.GetRoot().AsDict().at("serialization_settings"s).AsDict();
+  return {ser_settings.at("file").AsString()};
 }
 
 }  // namespace json_reader

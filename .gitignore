@@ -33,7 +33,8 @@
 
 #Other
 *.json
-*.txt
 *.svg
 *.xml
 *.zip
+.*
+**/build/

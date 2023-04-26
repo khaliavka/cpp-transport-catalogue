@@ -22,7 +22,7 @@ struct Bus {
 struct StopData {
   std::string_view name;
   geo::Coordinates coordinates;
-  std::vector<std::pair<std::string_view, size_t>> distances;
+  std::vector<std::pair<std::string_view, int>> distances;
 };
 
 struct BusData {

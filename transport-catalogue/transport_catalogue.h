@@ -33,10 +33,10 @@ class TransportCatalogue {
  public:
   void AddStop(std::string_view name, geo::Coordinates coordinates);
   void AddDraftStop(std::string_view name, geo::Coordinates coordinates);
-  void AddBus(std::string_view route_name,
+  void AddBus(std::string_view bus_name,
               const std::vector<std::string_view>& stop_names,
               bool is_roundtrip);
-  void SetDistance(std::string_view from, std::string_view to, size_t d);
+  void SetDistance(std::string_view from, std::string_view to, int d);
   size_t GetDistance(std::string_view from, std::string_view to) const;
   BusInfo GetBusInfo(std::string_view name) const;
   StopInfo GetStopInfo(std::string_view name) const;
@@ -45,9 +45,15 @@ class TransportCatalogue {
   std::vector<std::string_view> GetStopsForBus(std::string_view name) const;
   geo::Coordinates GetCoordinates(std::string_view name) const;
   bool IsRoundTrip(std::string_view name) const;
+  void SaveTo(std::ostream& output) const;
+  void LoadFrom(std::istream& input);
 
  private:
+  void AddStopInternal(std::string_view name, geo::Coordinates coordinates,
+                       bool is_consistent);
+
   struct Stop {
+    int id;
     std::string name;
     geo::Coordinates coordinates;
     std::set<std::string_view> buses;
@@ -61,15 +67,13 @@ class TransportCatalogue {
     bool is_roundtrip;
   };
 
-  void AddStopInternal(std::string_view name, geo::Coordinates coordinates,
-                       bool is_consistent);
-
   std::deque<Stop> stops_;
   std::deque<Bus> buses_;
   std::unordered_map<std::string_view, Stop*> stopname_to_stop_;
   std::unordered_map<std::string_view, Bus*> busname_to_bus_;
-  std::unordered_map<size_t, size_t> distances_;
+  std::unordered_map<size_t, int> distances_;
   std::hash<std::string_view> hasher_;
+  int current_id_ = 0;
 };
 
 }  // namespace catalogue

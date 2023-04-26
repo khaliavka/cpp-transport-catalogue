@@ -1,18 +1,18 @@
-#include <cassert>
-#include <iostream>
-#include <sstream>
-#include <string>
+// #include <cassert>
+// #include <iostream>
+// #include <sstream>
+// #include <string>
 
-#include "geo.h"
+// #include "geo.h"
 #include "json.h"
 #include "json_reader.h"
-#include "map_renderer.h"
-#include "request_handler.h"
-#include "transport_catalogue.h"
-#include "transport_router.h"
-// #include "input_reader.h"
+// #include "map_renderer.h"
+// #include "request_handler.h"
+// #include "transport_catalogue.h"
+// #include "transport_router.h"
+// // #include "input_reader.h"
 
-namespace test {
+// namespace test {
 
 // json::Document LoadJSON(const std::string& s) {
 //   std::istringstream strm(s);
@@ -83,24 +83,60 @@ namespace test {
 //   mr.RenderMap(cat, std::cout);
 // }
 
-}  // namespace test
+// }  // namespace test
 
-int main() {
-  using namespace json_reader;
-  using namespace map_renderer;
-  using namespace request_handler;
-  using namespace catalogue;
-  using namespace transport_router;
+// int main() {
+//   using namespace json_reader;
+//   using namespace map_renderer;
+//   using namespace request_handler;
+//   using namespace catalogue;
+//   using namespace transport_router;
 
-  JSONreader json_reader(json::Load(std::cin));
-  TransportCatalogue transport_catalogue;
-  json_reader.ProcessBaseRequests(transport_catalogue);
-  TransportRouter transport_router{json_reader.GetRoutingSettings(), transport_catalogue};
-  MapRenderer map_renderer{json_reader.GetRenderSettings()};
-  RequestHandler request_handler;
-  request_handler.ProcessStatRequests(transport_catalogue, transport_router,
-                                      map_renderer,
-                                      json_reader.GetStatRequests());
-  request_handler.PrintRequests(std::cout);
-  return 0;
+//   JSONreader json_reader(json::Load(std::cin));
+//   TransportCatalogue transport_catalogue;
+//   json_reader.ProcessBaseRequests(transport_catalogue);
+//   TransportRouter transport_router{json_reader.GetRoutingSettings(), transport_catalogue};
+//   MapRenderer map_renderer{json_reader.GetRenderSettings()};
+//   RequestHandler request_handler;
+//   request_handler.ProcessStatRequests(transport_catalogue, transport_router,
+//                                       map_renderer,
+//                                       json_reader.GetStatRequests());
+//   request_handler.PrintRequests(std::cout);
+//   return 0;
+// }
+
+#include <fstream>
+#include <iostream>
+#include <string_view>
+
+#include "serialization.h"
+
+using namespace std::literals;
+
+void PrintUsage(std::ostream& stream = std::cerr) {
+    stream << "Usage: transport_catalogue [make_base|process_requests]\n"sv;
+}
+
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        PrintUsage();
+        return 1;
+    }
+
+    const std::string_view mode(argv[1]);
+
+    if (mode == "make_base"sv) {
+
+        // make base here
+        serialization::MakeBase(std::cin);
+
+    } else if (mode == "process_requests"sv) {
+
+        // process requests here
+        serialization::ProcessRequests(std::cin, std::cout);
+
+    } else {
+        PrintUsage();
+        return 1;
+    }
 }
