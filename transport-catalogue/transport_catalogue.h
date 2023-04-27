@@ -48,8 +48,8 @@ class TransportCatalogue {
   std::vector<std::string_view> GetStopsForBus(std::string_view name) const;
   geo::Coordinates GetCoordinates(std::string_view name) const;
   bool IsRoundTrip(std::string_view name) const;
-  void SaveTo(serialize_proto::TransportCatalogue& catalogue_proto) const;
-  void LoadFrom(const serialize_proto::TransportCatalogue& catalogue_proto);
+  void Save(serialize_proto::TransportCatalogue& catalogue_proto) const;
+  void Load(const serialize_proto::TransportCatalogue& catalogue_proto);
 
  private:
   void AddStopInternal(std::string_view name, geo::Coordinates coordinates,

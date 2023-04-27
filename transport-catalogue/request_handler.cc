@@ -174,6 +174,7 @@ void RequestHandler::ProcessStatRequests(
 }
 
 void RequestHandler::ProcessStatRequestsLite(const TransportCatalogue& cat,
+                                             map_renderer::MapRenderer& mr,
                                              const Node& stat_requests) {
   using namespace std;
   Builder body{};
@@ -185,6 +186,9 @@ void RequestHandler::ProcessStatRequestsLite(const TransportCatalogue& cat,
     }
     if (type == "Bus"s) {
       body_array.Value(ProcessBusRequest(cat, request).AsDict());
+    }
+    if (type == "Map"s) {
+      body_array.Value(ProcessMapRequest(cat, mr, request).AsDict());
     }
   }
   out_ = move(body_array.EndArray().Build());

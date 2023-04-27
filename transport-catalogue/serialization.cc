@@ -1,8 +1,9 @@
 #include "serialization.h"
 
+#include <transport_catalogue.pb.h>
+
 #include <fstream>
 #include <iostream>
-#include <transport_catalogue.pb.h>
 
 #include "json_reader.h"
 #include "map_renderer.h"
@@ -18,6 +19,7 @@ const serialize_proto::TransportCatalogue& Serializer::GetCatalogueProto()
     const {
   return const_cast<Serializer*>(this)->GetCatalogueProto();
 }
+
 serialize_proto::TransportCatalogue& Serializer::GetCatalogueProto() {
   return catalogue_proto_;
 }
@@ -46,9 +48,10 @@ bool MakeBase(std::istream& input) {
   Serializer serializer(std::move(json_reader.GetSerializationSettings()));
   TransportCatalogue transport_catalogue;
   json_reader.ProcessBaseRequests(transport_catalogue);
-  transport_catalogue.SaveTo(serializer.GetCatalogueProto());
-  map_renderer::MapRenderer map_renderer(std::move(json_reader.GetRenderSettings()));
-  map_renderer.SaveTo(serializer.GetCatalogueProto());
+  transport_catalogue.Save(serializer.GetCatalogueProto());
+  map_renderer::MapRenderer map_renderer(
+      std::move(json_reader.GetRenderSettings()));
+  map_renderer.Save(serializer.GetCatalogueProto());
   return serializer.Write();
 }
 
@@ -60,13 +63,15 @@ bool ProcessRequests(std::istream& input, std::ostream& output) {
   using namespace transport_router;
   JSONreader json_reader(json::Load(input));
   Serializer serializer(std::move(json_reader.GetSerializationSettings()));
-  if(!serializer.Read()) {
+  if (!serializer.Read()) {
     return false;
   }
   TransportCatalogue transport_catalogue;
-  transport_catalogue.LoadFrom(serializer.GetCatalogueProto());
+  transport_catalogue.Load(serializer.GetCatalogueProto());
+  MapRenderer map_renderer;
+  map_renderer.Load(serializer.GetCatalogueProto());
   RequestHandler request_handler;
-  request_handler.ProcessStatRequestsLite(transport_catalogue,
+  request_handler.ProcessStatRequestsLite(transport_catalogue, map_renderer,
                                           json_reader.GetStatRequests());
   request_handler.PrintRequests(output);
   return true;

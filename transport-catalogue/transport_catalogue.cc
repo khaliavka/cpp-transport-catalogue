@@ -146,7 +146,7 @@ bool TransportCatalogue::IsRoundTrip(std::string_view name) const {
   return busname_to_bus_.at(name)->is_roundtrip;
 }
 
-void TransportCatalogue::SaveTo(
+void TransportCatalogue::Save(
     serialize_proto::TransportCatalogue& catalogue_proto) const {
   for (const auto& stop : stops_) {
     auto serial_stop = catalogue_proto.add_stop();
@@ -171,7 +171,7 @@ void TransportCatalogue::SaveTo(
   }
 }
 
-void TransportCatalogue::LoadFrom(
+void TransportCatalogue::Load(
     const serialize_proto::TransportCatalogue& catalogue_proto) {
   for (const auto& s : catalogue_proto.stop()) {
     auto& stop = stops_.emplace_back(Stop{});

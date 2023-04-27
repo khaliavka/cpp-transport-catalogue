@@ -125,7 +125,7 @@ void MapRenderer::SaveColor(serialize_proto::Color* color_proto,
     color_proto->mutable_as_rgb_rgba()->set_g(std::get<svg::Rgb>(color).green);
     color_proto->mutable_as_rgb_rgba()->set_b(std::get<svg::Rgb>(color).blue);
   }
-  if (std::holds_alternative<svg::Rgba>(settings_.underlayer_color)) {
+  if (std::holds_alternative<svg::Rgba>(color)) {
     color_proto->set_variant(serialize_proto::ColorVariant::COLOR_AS_RGBA);
     color_proto->mutable_as_rgb_rgba()->set_r(std::get<svg::Rgba>(color).red);
     color_proto->mutable_as_rgb_rgba()->set_g(std::get<svg::Rgba>(color).green);
@@ -135,7 +135,29 @@ void MapRenderer::SaveColor(serialize_proto::Color* color_proto,
   }
 }
 
-void MapRenderer::SaveTo(
+svg::Color MapRenderer::LoadColor(
+    const serialize_proto::Color& color_proto) const {
+  using CV = serialize_proto::ColorVariant;
+  const auto& color = color_proto.as_rgb_rgba();
+  switch (color_proto.variant()) {
+    case CV::COLOR_UNSPECIFIED:
+      return {};
+    case CV::COLOR_AS_STRING:
+      return {color_proto.as_string()};
+    case CV::COLOR_AS_RGB:
+      return svg::Rgb{static_cast<uint8_t>(color.r()),
+                      static_cast<uint8_t>(color.g()),
+                      static_cast<uint8_t>(color.b())};
+    case CV::COLOR_AS_RGBA:
+      return svg::Rgba{
+          static_cast<uint8_t>(color.r()), static_cast<uint8_t>(color.g()),
+          static_cast<uint8_t>(color.b()), static_cast<double>(color.a())};
+    default:
+      return {};
+  }
+}
+
+void MapRenderer::Save(
     serialize_proto::TransportCatalogue& catalogue_proto) const {
   auto rs_proto = catalogue_proto.mutable_render_settings();
   rs_proto->set_width(settings_.width);
@@ -157,8 +179,25 @@ void MapRenderer::SaveTo(
   }
 }
 
-void LoadFrom(const serialize_proto::TransportCatalogue& catalogue_proto) {
-  //work here!
+void MapRenderer::Load(
+    const serialize_proto::TransportCatalogue& catalogue_proto) {
+  auto rs_proto = catalogue_proto.render_settings();
+  settings_.width = rs_proto.width();
+  settings_.height = rs_proto.height();
+  settings_.padding = rs_proto.padding();
+  settings_.line_width = rs_proto.line_width();
+  settings_.stop_radius = rs_proto.stop_radius();
+  settings_.bus_label_font_size = rs_proto.bus_label_font_size();
+  settings_.bus_label_offset.x = rs_proto.bus_label_offset().x();
+  settings_.bus_label_offset.y = rs_proto.bus_label_offset().y();
+  settings_.stop_label_font_size = rs_proto.stop_label_font_size();
+  settings_.stop_label_offset.x = rs_proto.stop_label_offset().x();
+  settings_.stop_label_offset.y = rs_proto.stop_label_offset().y();
+  settings_.underlayer_color = LoadColor(rs_proto.underlayer_color());
+  settings_.underlayer_width = rs_proto.underlayer_width();
+  for (const auto& color : rs_proto.color_palette()) {
+    settings_.color_palette.push_back(LoadColor(color));
+  }
 }
 
 }  // namespace map_renderer

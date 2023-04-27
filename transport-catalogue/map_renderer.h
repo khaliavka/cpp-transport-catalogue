@@ -40,10 +40,11 @@ struct RenderSettings {
 
 class MapRenderer {
  public:
+  MapRenderer() = default;
   MapRenderer(RenderSettings rs) : settings_{std::move(rs)} {}
   void RenderMap(const catalogue::TransportCatalogue& cat, std::ostream& out);
-  void SaveTo(serialize_proto::TransportCatalogue& catalogue_proto) const;
-  void LoadFrom(const serialize_proto::TransportCatalogue& catalogue_proto);
+  void Save(serialize_proto::TransportCatalogue& catalogue_proto) const;
+  void Load(const serialize_proto::TransportCatalogue& catalogue_proto);
 
  private:
   void MakeBusPolylines(const std::vector<domain::Bus>& buses,
@@ -61,6 +62,7 @@ class MapRenderer {
                       const geo::SphereProjector& projector);
 
   void SaveColor(serialize_proto::Color* color_proto, const svg::Color& color) const;
+  svg::Color LoadColor(const serialize_proto::Color& color_proto) const;
 
   svg::Document document_;
   RenderSettings settings_;
