@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+import "graph.proto";
+
+package protobuf;
+
+message RoutingSettings {
+  int32 bus_wait_time = 1;
+  double bus_velocity = 2;
+}
+
+message VertexMap {
+  int32 key = 1;
+  uint64 val = 2;
+}
+
+message BusElem {
+  int32 bus_id = 1;
+  int32 span_count = 2;
+  double time = 3;
+}
+
+message EdgeMap {
+  uint64 key = 1;
+  oneof route_element {
+   int32 stop_id = 2;
+   BusElem bus = 3;
+  }
+}
+
+message RouteInternalData {
+  optional double weight = 1;
+  optional uint64 prev_edge = 2;
+}
+
+message RepRouteInternalData {
+  repeated RouteInternalData repRID = 1;
+}
+
+message Router {
+  repeated RepRouteInternalData reprepRID = 1;
+}
+
+message TransportRouter {
+  RoutingSettings settings = 1;
+  repeated VertexMap stop_name_to_vertex_id = 2;
+  repeated EdgeMap edge_id_to_route_element = 3;
+  Graph graph = 4;
+  Router router = 5;
+}

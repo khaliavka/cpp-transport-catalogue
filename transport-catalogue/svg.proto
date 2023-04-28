@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package protobuf;
+
+message Point {
+  double x = 1;
+  double y = 2;
+}
+
+enum ColorVariant {
+  COLOR_UNSPECIFIED = 0;
+  COLOR_AS_STRING = 1;
+  COLOR_AS_RGB = 2;
+  COLOR_AS_RGBA = 3;
+}
+
+message RgbRgba {
+  uint32 r = 1;
+  uint32 g = 2;
+  uint32 b = 3;
+  double a = 4;
+}
+
+message Color {
+  ColorVariant variant = 1;
+  string as_string = 2;
+  RgbRgba as_rgb_rgba = 3;
+}

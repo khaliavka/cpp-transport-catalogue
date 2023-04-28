@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "ranges.h"
+#include "serialization.h"
 
 namespace graph {
 
@@ -33,6 +34,9 @@ class DirectedWeightedGraph {
   size_t GetEdgeCount() const;
   const Edge<Weight>& GetEdge(EdgeId edge_id) const;
   IncidentEdgesRange GetIncidentEdges(VertexId vertex) const;
+  
+  friend class serialization::Saver;
+  friend class serialization::Loader;
 
  private:
   std::vector<Edge<Weight>> edges_;

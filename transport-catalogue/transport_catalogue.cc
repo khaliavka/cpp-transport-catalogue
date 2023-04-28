@@ -1,8 +1,9 @@
 #include "transport_catalogue.h"
 
+#include <transport_catalogue.pb.h>
+
 #include <string>
 #include <string_view>
-#include <transport_catalogue.pb.h>
 
 #include "domain.h"
 #include "geo.h"
@@ -13,9 +14,11 @@ void TransportCatalogue::AddStopInternal(std::string_view name,
                                          geo::Coordinates coordinates,
                                          bool is_consistent) {
   if (stopname_to_stop_.count(name) == 0) {
-    stops_.emplace_back(
-        Stop{current_id_, std::string{name}, coordinates, {}, is_consistent});
-    ++current_id_;
+    stops_.emplace_back(Stop{static_cast<int>(stops_.size()),
+                             std::string{name},
+                             coordinates,
+                             {},
+                             is_consistent});
     stopname_to_stop_[stops_.back().name] = &stops_.back();
     return;
   }
@@ -40,12 +43,15 @@ void TransportCatalogue::AddDraftStop(std::string_view name,
 void TransportCatalogue::AddBus(std::string_view bus_name,
                                 const std::vector<std::string_view>& stop_names,
                                 bool is_roundtrip) {
-  buses_.emplace_back(Bus{std::string{bus_name}, {}, {}, is_roundtrip});
-
+  buses_.emplace_back(Bus{static_cast<int>(buses_.size()),
+                          std::string{bus_name},
+                          {},
+                          {},
+                          is_roundtrip});
   for (const auto& name : stop_names) {
     if (stopname_to_stop_.count(name) == 0) {
-      stops_.emplace_back(Stop{current_id_, std::string{name}, {}, {}, false});
-      ++current_id_;
+      stops_.emplace_back(Stop{
+          static_cast<int>(stops_.size()), std::string{name}, {}, {}, false});
       stopname_to_stop_[stops_.back().name] = &stops_.back();
     }
 
@@ -144,59 +150,6 @@ geo::Coordinates TransportCatalogue::GetCoordinates(
 
 bool TransportCatalogue::IsRoundTrip(std::string_view name) const {
   return busname_to_bus_.at(name)->is_roundtrip;
-}
-
-void TransportCatalogue::Save(
-    serialize_proto::TransportCatalogue& catalogue_proto) const {
-  for (const auto& stop : stops_) {
-    auto serial_stop = catalogue_proto.add_stop();
-    serial_stop->set_id(stop.id);
-    serial_stop->set_name(stop.name);
-    serial_stop->mutable_coordinates()->set_lat(stop.coordinates.lat);
-    serial_stop->mutable_coordinates()->set_lng(stop.coordinates.lng);
-    serial_stop->set_is_consistent(stop.is_consistent);
-  }
-  for (const auto& bus : buses_) {
-    auto serial_bus = catalogue_proto.add_bus();
-    serial_bus->set_name(bus.name);
-    serial_bus->set_is_roundtrip(bus.is_roundtrip);
-    for (auto stop : bus.stops) {
-      serial_bus->add_stop_id(stop->id);
-    }
-  }
-  for (const auto& [key, val] : distances_) {
-    auto serial_dist = catalogue_proto.add_distance();
-    serial_dist->set_key(key);
-    serial_dist->set_val(val);
-  }
-}
-
-void TransportCatalogue::Load(
-    const serialize_proto::TransportCatalogue& catalogue_proto) {
-  for (const auto& s : catalogue_proto.stop()) {
-    auto& stop = stops_.emplace_back(Stop{});
-    stop.id = s.id();
-    stop.name = s.name();
-    stop.coordinates.lat = s.coordinates().lat();
-    stop.coordinates.lng = s.coordinates().lng();
-    stop.is_consistent = s.is_consistent();
-    stopname_to_stop_[stop.name] = &stop;
-  }
-  for (const auto& b : catalogue_proto.bus()) {
-    auto& bus = buses_.emplace_back(Bus{});
-    bus.name = b.name();
-    for (const auto& id : b.stop_id()) {
-      bus.stops.push_back(&stops_[id]);
-      bus.unique_stops.insert(&stops_[id]);
-      stops_[id].buses.insert(bus.name);
-    }
-    bus.is_roundtrip = b.is_roundtrip();
-    busname_to_bus_[bus.name] = &bus;
-  }
-  for (const auto& d : catalogue_proto.distance()) {
-    distances_[d.key()] = d.val();
-  }
-  current_id_ = stops_.size();
 }
 
 }  // namespace catalogue

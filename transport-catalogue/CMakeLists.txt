@@ -6,7 +6,12 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(Protobuf REQUIRED)
 find_package(Threads REQUIRED)
 
-protobuf_generate_cpp(PROTO_SOURCES PROTO_HEADERS transport_catalogue.proto)
+protobuf_generate_cpp(PROTO_SOURCES PROTO_HEADERS 
+                                                  graph.proto
+                                                  map_renderer.proto
+                                                  svg.proto
+                                                  transport_catalogue.proto
+                                                  transport_router.proto)
 
 set(CATALOGUE_SOURCES domain.cc
                       domain.h

@@ -1,5 +1,8 @@
 #pragma once
 
+
+#include <transport_catalogue.pb.h>
+
 #include <deque>
 #include <functional>
 #include <set>
@@ -9,11 +12,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include <transport_catalogue.pb.h>
-
-
 #include "domain.h"
 #include "geo.h"
+#include "serialization.h"
 
 namespace catalogue {
 
@@ -48,8 +49,9 @@ class TransportCatalogue {
   std::vector<std::string_view> GetStopsForBus(std::string_view name) const;
   geo::Coordinates GetCoordinates(std::string_view name) const;
   bool IsRoundTrip(std::string_view name) const;
-  void Save(serialize_proto::TransportCatalogue& catalogue_proto) const;
-  void Load(const serialize_proto::TransportCatalogue& catalogue_proto);
+  
+  friend class serialization::Saver;
+  friend class serialization::Loader;
 
  private:
   void AddStopInternal(std::string_view name, geo::Coordinates coordinates,
@@ -64,6 +66,7 @@ class TransportCatalogue {
   };
 
   struct Bus {
+    int id;
     std::string name;
     std::vector<Stop*> stops;
     std::unordered_set<Stop*> unique_stops;
@@ -76,7 +79,6 @@ class TransportCatalogue {
   std::unordered_map<std::string_view, Bus*> busname_to_bus_;
   std::unordered_map<size_t, int> distances_;
   std::hash<std::string_view> hasher_;
-  int current_id_ = 0;
 };
 
 }  // namespace catalogue

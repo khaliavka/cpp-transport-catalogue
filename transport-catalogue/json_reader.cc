@@ -143,8 +143,7 @@ RoutingSettings JSONreader::GetRoutingSettings() const {
   return routing_settings;
 }
 
-serialization::SerializationSettings JSONreader::GetSerializationSettings()
-    const {
+serialization::SerSettings JSONreader::GetSerSettings() const {
   const auto& ser_settings =
       document_.GetRoot().AsDict().at("serialization_settings"s).AsDict();
   return {ser_settings.at("file").AsString()};

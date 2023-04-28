@@ -17,7 +17,7 @@ class JSONreader {
   const json::Node& GetStatRequests() const;
   map_renderer::RenderSettings GetRenderSettings() const;
   transport_router::RoutingSettings GetRoutingSettings() const;
-  serialization::SerializationSettings GetSerializationSettings() const;
+  serialization::SerSettings GetSerSettings() const;
   domain::StopData ProcessStop(const json::Dict& stop_map) const;
   domain::BusData ProcessBus(const json::Dict& bus_as_dict) const;
  private:
