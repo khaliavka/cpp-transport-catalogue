@@ -61,12 +61,16 @@ class Loader {
  public:
   Loader(SerSettings s);
   TrCat LoadTrCat() const;
+  TrRouter LoadTrRouter(const TrCat& tr_cat) const;
   MapRend LoadMapRend() const;
-  Graph LoadGraph() const;
-  TrRouter LoadTrRouter(const TrCat& cat) const;
   bool Read();
 
  private:
+  Graph LoadGraph(const TrRoutProto& router_proto) const;
+  void LoadLibRouter(TrRouter& tr_router) const;
+  void LoadRoutingSettings(TrRouter& tr_router) const;
+  void LoadVertexMap(const TrCat& tr_cat, TrRouter& tr_router) const;
+  void LoadEdgeMap(const TrCat& tr_cat, TrRouter& tr_router) const;
   svg::Color LoadColor(const protobuf::Color& color_proto) const;
 
   TrCatProto base_proto_;

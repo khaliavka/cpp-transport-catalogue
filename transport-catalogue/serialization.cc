@@ -116,13 +116,13 @@ void Saver::SaveGraph(TrRoutProto* router_proto) {
 void Saver::SaveRouter(TrRoutProto* router_proto) {
   auto router_lib_pr = router_proto->mutable_router();
   for (const auto& vec_rid : tr_router_.router_.routes_internal_data_) {
-    auto rep_rep_rid_pr = router_lib_pr->add_repreprid();
+    auto rep_rep_rid = router_lib_pr->add_repreprid();
     for (const auto& rid : vec_rid) {
-      auto rep_rid_pr = rep_rep_rid_pr->add_reprid();
+      auto rep_rid = rep_rep_rid->add_reprid();
       if (rid) {
-        rep_rid_pr->set_weight(rid->weight);
+        rep_rid->set_weight(rid->weight);
         if (rid->prev_edge) {
-          rep_rid_pr->set_prev_edge(*rid->prev_edge);
+          rep_rid->set_prev_edge(*rid->prev_edge);
         }
       }
     }
@@ -229,13 +229,84 @@ MapRend Loader::LoadMapRend() const {
   return mr;
 }
 
-Graph Loader::LoadGraph() const {
+Graph Loader::LoadGraph(const TrRoutProto& router_proto) const {
+  auto graph_proto = router_proto.graph();
   Graph graph;
+  for (const auto& edge : graph_proto.edges()) {
+    graph.edges_.push_back(
+        graph::Edge<double>{edge.from(), edge.to(), edge.weight()});
+  }
+  for (const auto& incidence_list : graph_proto.incidence_lists()) {
+    graph.incidence_lists_.push_back({});
+    for (const auto& edge_id : incidence_list.edge_id()) {
+      graph.incidence_lists_.back().push_back(edge_id);
+    }
+  }
   return graph;
 }
 
-TrRouter Loader::LoadTrRouter(const TrCat& cat) const {
-  TrRouter tr_router(LoadGraph());
+void Loader::LoadLibRouter(TrRouter& tr_router) const {
+  using RID = graph::Router<double>::RouteInternalData;
+  const auto& router_proto = base_proto_.router();
+  auto& rid = tr_router.router_.routes_internal_data_;
+  for (const auto& rep_rid_pr : router_proto.router().repreprid()) {
+    rid.push_back({});
+    for (const auto& rid_pr : rep_rid_pr.reprid()) {
+      rid.back().push_back(std::nullopt);
+      if (rid_pr.has_weight()) {
+        rid.back().back().emplace(RID{rid_pr.weight(), std::nullopt});
+        if (rid_pr.has_prev_edge()) {
+          rid.back().back()->prev_edge.emplace(rid_pr.prev_edge());
+        }
+      }
+    }
+  }
+}
+
+void Loader::LoadRoutingSettings(TrRouter& tr_router) const {
+  const auto& router_proto = base_proto_.router();
+  tr_router.routing_settings_.bus_wait_time =
+      router_proto.settings().bus_wait_time();
+  tr_router.routing_settings_.bus_velocity =
+      router_proto.settings().bus_velocity();
+}
+
+void Loader::LoadVertexMap(const TrCat& tr_cat, TrRouter& tr_router) const {
+  const auto& stop_map_pr = base_proto_.router().stop_name_to_vertex_id();
+  const auto& stops = tr_cat.stops_;
+  auto& stop_map = tr_router.stop_name_to_vertex_id_;
+  for (const auto& elem : stop_map_pr) {
+    stop_map.emplace(stops[elem.key()].name, elem.val());
+  }
+}
+
+void Loader::LoadEdgeMap(const TrCat& tr_cat, TrRouter& tr_router) const {
+  using rec = protobuf::EdgeMap::RouteElementCase;
+  const auto& edge_map_pr = base_proto_.router().edge_id_to_route_element();
+  auto& edge_map = tr_router.edge_id_to_route_element_;
+  for (const auto& elem : edge_map_pr) {
+    switch (elem.route_element_case()) {
+      case rec::kStopId:
+        edge_map.emplace(elem.key(), Wait{tr_cat.stops_[elem.stop_id()].name});
+        break;
+      case rec::kBus:
+        edge_map.emplace(elem.key(),
+                         Bus{tr_cat.buses_[elem.bus().bus_id()].name,
+                             elem.bus().span_count(), elem.bus().time()});
+        break;
+      case rec::ROUTE_ELEMENT_NOT_SET:
+        throw;
+    }
+  }
+}
+
+TrRouter Loader::LoadTrRouter(const TrCat& tr_cat) const {
+  const auto& router_proto = base_proto_.router();
+  TrRouter tr_router(LoadGraph(router_proto));
+  LoadVertexMap(tr_cat, tr_router);
+  LoadEdgeMap(tr_cat, tr_router);
+  LoadLibRouter(tr_router);
+  LoadRoutingSettings(tr_router);
   return tr_router;
 }
 
@@ -284,17 +355,16 @@ bool MakeBase(std::istream& input) {
 }
 
 bool ProcessRequests(std::istream& input, std::ostream& output) {
-  JSONrr j_reader(json::Load(input));
-  Loader loader(std::move(j_reader.GetSerSettings()));
+  JSONrr reader(json::Load(input));
+  Loader loader(std::move(reader.GetSerSettings()));
   if (!loader.Read()) {
     return false;
   }
-  auto tr_cat = loader.LoadTrCat();
-  auto tr_router = loader.LoadTrRouter(tr_cat);
-  auto map_rend = loader.LoadMapRend();
+  auto cat = loader.LoadTrCat();
+  auto router = loader.LoadTrRouter(cat);
+  auto renderer = loader.LoadMapRend();
   ReqHand req_hand;
-  req_hand.ProcessStatRequestsLite(tr_cat, map_rend,
-                                   j_reader.GetStatRequests());
+  req_hand.ProcessStatRequests(cat, router, renderer, reader.GetStatRequests());
   req_hand.PrintRequests(output);
   return true;
 }

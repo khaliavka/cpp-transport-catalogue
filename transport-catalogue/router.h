@@ -38,6 +38,7 @@ class Router {
     Weight weight;
     std::optional<EdgeId> prev_edge;
   };
+  
   using RoutesInternalData =
       std::vector<std::vector<std::optional<RouteInternalData>>>;
 
