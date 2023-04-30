@@ -41,14 +41,16 @@ struct RenderSettings {
 
 class MapRenderer {
  public:
-  MapRenderer() = default;
-  MapRenderer(RenderSettings rs) : settings_{std::move(rs)} {}
-  void RenderMap(const catalogue::TransportCatalogue& cat, std::ostream& out);
+  using TrCat = catalogue::TransportCatalogue;
+
+  MapRenderer(RenderSettings rs);
+  void RenderMap(const TrCat& cat, std::ostream& out);
   
   friend class serialization::Saver;
   friend class serialization::Loader;
   
  private:
+  MapRenderer() = default;
   void MakeBusPolylines(const std::vector<domain::Bus>& buses,
                         const geo::SphereProjector& projector);
 
@@ -78,6 +80,7 @@ void MapRenderer::MakeStopCircles(const T& unique_stops,
     document_.Add(std::move(c));
   }
 }
+
 template <typename T>
 void MapRenderer::MakeStopLabels(const T& unique_stops,
                                  const geo::SphereProjector& projector) {
@@ -102,4 +105,5 @@ void MapRenderer::MakeStopLabels(const T& unique_stops,
     document_.Add(std::move(t));
   }
 }
+
 }  // namespace map_renderer

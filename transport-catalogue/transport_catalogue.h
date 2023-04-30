@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <transport_catalogue.pb.h>
 
 #include <deque>

@@ -41,7 +41,6 @@ struct RouteInfo {
 class TransportRouter {
  public:
   TransportRouter(RoutingSettings rs, const TrCat& tc);
-  TransportRouter(Graph&& g); 
   std::optional<RouteInfo> BuildRoute(std::string_view from,
                                       std::string_view to) const;
   int GetBusWaitTime() const;
@@ -54,6 +53,7 @@ class TransportRouter {
   using EdgeMap = std::unordered_map<graph::EdgeId, RouteElement>;
   using EdgeStruct = graph::Edge<double>;
 
+  TransportRouter(Graph&& g); 
   Graph BuildVertexMapEdgeMapAndGraph(const TrCat& transport_catalogue);
 
   RoutingSettings routing_settings_;

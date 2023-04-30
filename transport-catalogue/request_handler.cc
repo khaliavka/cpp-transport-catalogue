@@ -4,24 +4,14 @@
 #include <string>
 #include <utility>
 
-#include "domain.h"
 #include "json.h"
 #include "json_builder.h"
-#include "json_reader.h"
-#include "map_renderer.h"
-#include "transport_catalogue.h"
-#include "transport_router.h"
 
 namespace request_handler {
 
-using namespace json_reader;
-using namespace catalogue;
-using namespace domain;
-using namespace json;
-
 json::Node RequestHandler::ErrorMessage(int id) const {
   using namespace std;
-  return Builder{}
+  return json::Builder{}
       .StartDict()
       .Key(move("request_id"s))
       .Value(id)
@@ -31,10 +21,10 @@ json::Node RequestHandler::ErrorMessage(int id) const {
       .Build();
 }
 
-json::Node RequestHandler::ProcessStopRequest(const TransportCatalogue& cat,
-                                              const Node& request) const {
+json::Node RequestHandler::ProcessStopRequest(const TrCat& cat,
+                                              const json::Node& request) const {
   using namespace std;
-  Builder stop{};
+  json::Builder stop{};
   int id = request.AsDict().at("id"s).AsInt();
   const auto stop_info =
       cat.GetStopInfo(request.AsDict().at("name"s).AsString());
@@ -54,10 +44,10 @@ json::Node RequestHandler::ProcessStopRequest(const TransportCatalogue& cat,
   return stop.Build();
 }
 
-Node RequestHandler::ProcessBusRequest(const TransportCatalogue& cat,
-                                       const Node& request) const {
+json::Node RequestHandler::ProcessBusRequest(const TrCat& cat,
+                                             const json::Node& request) const {
   using namespace std;
-  Builder bus{};
+  json::Builder bus{};
   int id = request.AsDict().at("id"s).AsInt();
   const auto bus_info = cat.GetBusInfo(request.AsDict().at("name"s).AsString());
   if (bus_info.is_found) {
@@ -79,11 +69,10 @@ Node RequestHandler::ProcessBusRequest(const TransportCatalogue& cat,
   return bus.Build();
 }
 
-Node RequestHandler::ProcessRouteRequest(
-    const transport_router::TransportRouter& transport_router,
-    const Node& request) const {
+json::Node RequestHandler::ProcessRouteRequest(
+    const TrRouter& transport_router, const json::Node& request) const {
   using namespace std;
-  Builder route{};
+  json::Builder route{};
   int id = request.AsDict().at("id"s).AsInt();
   const auto& from = request.AsDict().at("from"s).AsString();
   const auto& to = request.AsDict().at("to"s).AsString();
@@ -99,8 +88,8 @@ Node RequestHandler::ProcessRouteRequest(
     int bus_wait_time = transport_router.GetBusWaitTime();
     if (route_info->elements) {
       for (const auto& element : route_info->elements.value()) {
-        if (std::holds_alternative<transport_router::Wait>(element)) {
-          const auto& wait_element = get<transport_router::Wait>(element);
+        if (std::holds_alternative<Wait>(element)) {
+          const auto& wait_element = get<Wait>(element);
           route.StartDict()
               .Key("type"s)
               .Value("Wait"s)
@@ -110,7 +99,7 @@ Node RequestHandler::ProcessRouteRequest(
               .Value(bus_wait_time)
               .EndDict();
         } else {
-          const auto& bus_element = std::get<transport_router::Bus>(element);
+          const auto& bus_element = std::get<Bus>(element);
           route.StartDict()
               .Key("type"s)
               .Value("Bus"s)
@@ -131,14 +120,13 @@ Node RequestHandler::ProcessRouteRequest(
   return route.Build();
 }
 
-Node RequestHandler::ProcessMapRequest(const TransportCatalogue& cat,
-                                       map_renderer::MapRenderer& mr,
-                                       const Node& request) const {
+json::Node RequestHandler::ProcessMapRequest(const TrCat& cat, MapRend& mr,
+                                             const json::Node& request) const {
   using namespace std;
   ostringstream os;
   mr.RenderMap(cat, os);
   int id = request.AsDict().at("id"s).AsInt();
-  return Builder{}
+  return json::Builder{}
       .StartDict()
       .Key(move("request_id"s))
       .Value(id)
@@ -148,12 +136,12 @@ Node RequestHandler::ProcessMapRequest(const TransportCatalogue& cat,
       .Build();
 }
 
-void RequestHandler::ProcessStatRequests(
-    const TransportCatalogue& cat,
-    const transport_router::TransportRouter& transport_router,
-    map_renderer::MapRenderer& mr, const Node& stat_requests) {
+void RequestHandler::ProcessStatRequests(const TrCat& cat,
+                                         const TrRouter& transport_router,
+                                         MapRend& mr,
+                                         const json::Node& stat_requests) {
   using namespace std;
-  Builder body{};
+  json::Builder body{};
   auto body_array = body.StartArray();
   for (const auto& request : stat_requests.AsArray()) {
     const auto& type = request.AsDict().at("type"s).AsString();
@@ -173,11 +161,10 @@ void RequestHandler::ProcessStatRequests(
   out_ = move(body_array.EndArray().Build());
 }
 
-void RequestHandler::ProcessStatRequestsLite(const TransportCatalogue& cat,
-                                             map_renderer::MapRenderer& mr,
-                                             const Node& stat_requests) {
+void RequestHandler::ProcessStatRequestsLite(const TrCat& cat, MapRend& mr,
+                                             const json::Node& stat_requests) {
   using namespace std;
-  Builder body{};
+  json::Builder body{};
   auto body_array = body.StartArray();
   for (const auto& request : stat_requests.AsArray()) {
     const auto& type = request.AsDict().at("type"s).AsString();
@@ -195,7 +182,7 @@ void RequestHandler::ProcessStatRequestsLite(const TransportCatalogue& cat,
 }
 
 void RequestHandler::PrintRequests(std::ostream& out) const {
-  Print(Document{out_}, out);
+  json::Print(json::Document{out_}, out);
 }
 
 }  // namespace request_handler

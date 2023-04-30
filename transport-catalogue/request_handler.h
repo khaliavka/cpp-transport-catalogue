@@ -1,8 +1,6 @@
 #pragma once
 
-#include "domain.h"
 #include "json.h"
-#include "json_reader.h"
 #include "map_renderer.h"
 #include "transport_catalogue.h"
 #include "transport_router.h"
@@ -10,27 +8,35 @@
 namespace request_handler {
 
 class RequestHandler {
+
+  using TrCat = catalogue::TransportCatalogue;
+  using MapRend = map_renderer::MapRenderer;
+  using TrRouter = transport_router::TransportRouter;
+  using Wait = transport_router::Wait;
+  using Bus = transport_router::Bus;
+
  public:
-  void ProcessStatRequests(
-      const catalogue::TransportCatalogue& cat,
-      const transport_router::TransportRouter& transport_router,
-      map_renderer::MapRenderer& mr, const json::Node& stat_reqs);
-  void ProcessStatRequestsLite(const catalogue::TransportCatalogue& cat,
-                               map_renderer::MapRenderer& mr,
+  void ProcessStatRequests(const TrCat& cat, const TrRouter& tr_router,
+                           MapRend& mr, const json::Node& stat_reqs);
+
+  void ProcessStatRequestsLite(const TrCat& cat, MapRend& mr,
                                const json::Node& stat_requests);
+
   void PrintRequests(std::ostream& out) const;
 
  private:
-  json::Node ProcessStopRequest(const catalogue::TransportCatalogue& cat,
+  json::Node ProcessStopRequest(const TrCat& cat,
                                 const json::Node& request) const;
-  json::Node ProcessBusRequest(const catalogue::TransportCatalogue& cat,
+
+  json::Node ProcessBusRequest(const TrCat& cat,
                                const json::Node& request) const;
-  json::Node ProcessRouteRequest(
-      const transport_router::TransportRouter& transport_router,
-      const json::Node& request) const;
-  json::Node ProcessMapRequest(const catalogue::TransportCatalogue& cat,
-                               map_renderer::MapRenderer& mr,
+
+  json::Node ProcessRouteRequest(const TrRouter& tr_router,
+                                 const json::Node& request) const;
+
+  json::Node ProcessMapRequest(const TrCat& cat, MapRend& mr,
                                const json::Node& request) const;
+
   json::Node ErrorMessage(int id) const;
 
   json::Node out_;

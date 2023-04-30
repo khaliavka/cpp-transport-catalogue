@@ -38,9 +38,10 @@ class Router {
     Weight weight;
     std::optional<EdgeId> prev_edge;
   };
-  
+
   using RoutesInternalData =
       std::vector<std::vector<std::optional<RouteInternalData>>>;
+
 
   void InitializeRoutesInternalData(const Graph& graph) {
     const size_t vertex_count = graph.GetVertexCount();

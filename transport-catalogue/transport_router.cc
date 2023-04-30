@@ -10,8 +10,7 @@
 
 namespace transport_router {
 
-TransportRouter::TransportRouter(RoutingSettings rs,
-                                 const catalogue::TransportCatalogue& tc)
+TransportRouter::TransportRouter(RoutingSettings rs, const TrCat& tc)
     : routing_settings_(rs),
       graph_{std::move(BuildVertexMapEdgeMapAndGraph(tc))},
       router_{graph_} {}
@@ -20,7 +19,7 @@ TransportRouter::TransportRouter(Graph&& g)
     : graph_{std::move(g)}, router_(graph_, false) {}
 
 Graph TransportRouter::BuildVertexMapEdgeMapAndGraph(
-    const catalogue::TransportCatalogue& transport_catalogue) {
+    const TrCat& transport_catalogue) {
   auto reachable_stop_names = transport_catalogue.GetReachableStopNames();
   size_t stop_count = reachable_stop_names.size();
   Graph graph(2 * stop_count);

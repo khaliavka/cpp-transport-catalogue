@@ -13,18 +13,23 @@ namespace map_renderer {
 
 using namespace std::literals;
 
-void MapRenderer::RenderMap(const catalogue::TransportCatalogue& cat,
+MapRenderer::MapRenderer(RenderSettings rs) : settings_{std::move(rs)} {}
+
+void MapRenderer::RenderMap(const TrCat& cat,
                             std::ostream& out) {
   auto bus_names = cat.GetBusNames();
   std::sort(bus_names.begin(), bus_names.end());
   std::vector<geo::Coordinates> sp_init;
   std::vector<domain::Bus> buses;
+
   struct Cmp {
     bool operator()(const domain::Stop& lhs, const domain::Stop& rhs) const {
       return lhs.name < rhs.name;
     }
   };
+
   std::set<domain::Stop, Cmp> unique_stops;
+
   for (const auto& b : bus_names) {
     domain::Bus bus;
     bus.name = b;
@@ -39,6 +44,7 @@ void MapRenderer::RenderMap(const catalogue::TransportCatalogue& cat,
       buses.push_back(std::move(bus));
     }
   }
+
   geo::SphereProjector projector(sp_init.cbegin(), sp_init.cend(),
                                  settings_.width, settings_.height,
                                  settings_.padding);
@@ -49,7 +55,6 @@ void MapRenderer::RenderMap(const catalogue::TransportCatalogue& cat,
   MakeStopLabels(unique_stops, projector);
 
   document_.Render(out);
-  return;
 }
 
 void MapRenderer::MakeBusPolylines(const std::vector<domain::Bus>& buses,

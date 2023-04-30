@@ -295,7 +295,7 @@ void Loader::LoadEdgeMap(const TrCat& tr_cat, TrRouter& tr_router) const {
                              elem.bus().span_count(), elem.bus().time()});
         break;
       case rec::ROUTE_ELEMENT_NOT_SET:
-        throw;
+        throw std::invalid_argument("Invalid deserialized edge map data.");
     }
   }
 }
@@ -342,15 +342,15 @@ svg::Color Loader::LoadColor(const protobuf::Color& color_proto) const {
 // -- functions --
 
 bool MakeBase(std::istream& input) {
-  TrCat tr_cat;
-  JSONrr j_reader(json::Load(input));
-  j_reader.ProcessBaseRequests(tr_cat);
-  MapRend map_rend(std::move(j_reader.GetRenderSettings()));
-  TrRouter tr_router{j_reader.GetRoutingSettings(), tr_cat};
-  Saver saver(std::move(j_reader.GetSerSettings()), tr_cat, tr_router);
+  TrCat cat;
+  JSONrr reader(json::Load(input));
+  reader.ProcessBaseRequests(cat);
+  MapRend renderer(std::move(reader.GetRenderSettings()));
+  TrRouter router{reader.GetRoutingSettings(), cat};
+  Saver saver(std::move(reader.GetSerSettings()), cat, router);
   saver.SaveTrCat();
   saver.SaveTrRouter();
-  saver.SaveMapRend(map_rend);
+  saver.SaveMapRend(renderer);
   return saver.Write();
 }
 
